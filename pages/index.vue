@@ -164,14 +164,28 @@ interface Booking {
   status: string
 }
 
+interface Building {
+  id: string
+  name: string
+  floors: number
+}
+
 const auth = useAuthStore()
 const rooms = ref<Room[]>([])
 const bookings = ref<Booking[]>([])
+const buildingsList = ref<Building[]>([])
 const selectedBuilding = ref<string>('all')
 
-const buildings = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'L', 'M', 'S', 'S1', 'S2']
-
 const filteredRooms = computed(() => {
+  if (selectedBuilding.value === 'all') {
+    return rooms.value
+  }
+  return rooms.value.filter(r => r.building === selectedBuilding.value)
+})
+
+const buildings = computed(() => {
+  return ['all', ...buildingsList.value.map(b => b.id)]
+})
   if (selectedBuilding.value === 'all') {
     return rooms.value
   }
@@ -230,10 +244,12 @@ const getRoomStatus = (roomId: string) => {
 onMounted(async () => {
   rooms.value = await $fetch<Room[]>('/api/rooms')
   bookings.value = await $fetch<Booking[]>('/api/bookings')
+  buildingsList.value = await $fetch<Building[]>('/api/buildings')
   
   setInterval(async () => {
     rooms.value = await $fetch<Room[]>('/api/rooms')
     bookings.value = await $fetch<Booking[]>('/api/bookings')
+    buildingsList.value = await $fetch<Building[]>('/api/buildings')
   }, 30000)
 })
 </script>

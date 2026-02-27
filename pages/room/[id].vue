@@ -28,7 +28,7 @@
             </n-h1>
             <n-text depth="2" class="room-meta">
               {{ room.location }} • До {{ room.capacity }} чел.
-              <n-tag v-if="room.type === 'meeting'" size="small" type="info" style="margin-left: 8px">Круглосуточно</n-tag>
+              <n-tag v-if="['meeting', 'conference', 'lab'].includes(room.type)" size="small" type="info" style="margin-left: 8px">Круглосуточно</n-tag>
               <n-tag v-else size="small" type="default" style="margin-left: 8px">09:00 - 21:00</n-tag>
             </n-text>
           </div>
@@ -207,7 +207,7 @@ const onDateChange = () => {
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   const currentHour = now.getHours() + 1
-  const minHour = room.value?.type === 'meeting' ? 0 : 9
+  const minHour = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 0 : 9
   
   if (selectedDate.value === today) {
     const defaultStart = Math.max(currentHour, minHour)
@@ -224,7 +224,7 @@ const bookingTitle = ref('')
 const isBooking = ref(false)
 
 const displayHours = computed(() => {
-  if (room.value?.type === 'meeting') {
+  if (['meeting', 'conference', 'lab'].includes(room.value?.type)) {
     return Array.from({ length: 24 }, (_, i) => i)
   }
   return Array.from({ length: 13 }, (_, i) => i + 9)
@@ -232,7 +232,7 @@ const displayHours = computed(() => {
 
 const endHourOptions = computed(() => {
   const start = parseInt(startHour.value)
-  const maxHours = room.value?.type === 'meeting' ? 24 : 8
+  const maxHours = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 24 : 8
   const maxEnd = Math.min(start + maxHours, displayHours.value[displayHours.value.length - 1] + 1)
   
   const now = new Date()

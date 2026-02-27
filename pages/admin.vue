@@ -50,31 +50,33 @@
             <path d="M3 21V7L12 3L21 7V21" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M9 21V13H15V21" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span class="card-title">Управление комнатами</span>
+          <span class="card-title">Управление</span>
         </div>
       </template>
       
       <n-tabs type="segment">
-        <n-tab-pane name="list" tab="Список комнат">
+        <n-tab-pane name="rooms" tab="Комнаты">
           <n-data-table
             :columns="roomColumns"
             :data="rooms"
             :row-key="(row: any) => row.id"
             :bordered="false"
             class="rooms-table"
+            style="margin-top: 16px"
           />
         </n-tab-pane>
-        <n-tab-pane name="add" tab="Добавить комнату">
+        
+        <n-tab-pane name="addRoom" tab="Добавить комнату">
           <n-form ref="formRef" :model="newRoom" style="margin-top: 16px">
             <n-grid :cols="2" :x-gap="16" :y-gap="8">
               <n-gi :span="2">
                 <n-form-item label="Корпус">
-                  <n-select v-model:value="newRoom.building" :options="buildingOptions" placeholder="Выберите корпус" />
+                  <n-select v-model:value="newRoom.building" :options="buildingSelectOptions" placeholder="Выберите корпус" />
                 </n-form-item>
               </n-gi>
               <n-gi>
                 <n-form-item label="Этаж">
-                  <n-select v-model:value="newRoom.floor" :options="floorOptions" placeholder="Выберите этаж" />
+                  <n-select v-model:value="newRoom.floor" :options="floorOptionsForBuilding" placeholder="Выберите этаж" :disabled="!newRoom.building" />
                 </n-form-item>
               </n-gi>
               <n-gi>
@@ -84,25 +86,59 @@
               </n-gi>
               <n-gi :span="2">
                 <n-form-item label="Название аудитории">
-                  <n-input v-model:value="newRoom.name" placeholder="Коворкинг 'У окна'" />
+                  <n-input v-model:value="newRoom.name" placeholder="Коворкинг 'У окна'" :maxlength="50" show-count />
                 </n-form-item>
               </n-gi>
               <n-gi>
                 <n-form-item label="Вместимость">
-                  <n-input-number v-model:value="newRoom.capacity" :min="1" style="width: 100%" />
+                  <n-input-number v-model:value="newRoom.capacity" :min="1" :max="100" style="width: 100%" />
                 </n-form-item>
               </n-gi>
               <n-gi>
                 <n-form-item label="Удобства">
-                  <n-input v-model:value="newRoom.amenities" placeholder="Розетки, Wi-Fi" />
+                  <n-input v-model:value="newRoom.amenities" placeholder="Розетки, Wi-Fi" :maxlength="100" show-count />
                 </n-form-item>
               </n-gi>
             </n-grid>
             <div style="margin-top: 16px">
-              <n-text depth="2">ID будет сгенерирован автоматически: <strong>{{ generatedId }}</strong></n-text>
+              <n-text depth="2">ID будет сгенерирован: <strong>{{ generatedId }}</strong></n-text>
             </div>
             <n-button type="primary" class="add-btn" style="margin-top: 16px" @click="addRoom">
               Добавить комнату
+            </n-button>
+          </n-form>
+        </n-tab-pane>
+        
+        <n-tab-pane name="buildings" tab="Корпуса">
+          <n-data-table
+            :columns="buildingColumns"
+            :data="buildings"
+            :row-key="(row: any) => row.id"
+            :bordered="false"
+            class="rooms-table"
+            style="margin-top: 16px"
+          />
+          <n-divider>Добавить корпус</n-divider>
+          <n-form :model="newBuilding" style="margin-top: 16px">
+            <n-grid :cols="3" :x-gap="16">
+              <n-gi>
+                <n-form-item label="Буква (ID)">
+                  <n-input v-model:value="newBuilding.id" placeholder="A" :maxlength="2" style="text-transform: uppercase" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="Название">
+                  <n-input v-model:value="newBuilding.name" placeholder="Библиотека" :maxlength="30" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="Этажей">
+                  <n-input-number v-model:value="newBuilding.floors" :min="1" :max="30" />
+                </n-form-item>
+              </n-gi>
+            </n-grid>
+            <n-button type="primary" class="add-btn" style="margin-top: 8px" @click="addBuilding">
+              Добавить корпус
             </n-button>
           </n-form>
         </n-tab-pane>
@@ -112,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { NCard, NH1, NDataTable, NButton, NForm, NFormItem, NInput, NInputNumber, NGrid, NGi, NTag, useMessage, NText, NTabs, NTabPane, NSelect } from 'naive-ui'
+import { NCard, NH1, NDataTable, NButton, NForm, NFormItem, NInput, NInputNumber, NGrid, NGi, NTag, useMessage, NText, NTabs, NTabPane, NSelect, NDivider } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
 
 interface Booking {
@@ -139,12 +175,19 @@ interface Room {
   isActive: boolean
 }
 
+interface Building {
+  id: string
+  name: string
+  floors: number
+}
+
 const auth = useAuthStore()
 const router = useRouter()
 const message = useMessage()
 
 const bookings = ref<Booking[]>([])
 const rooms = ref<Room[]>([])
+const buildings = ref<Building[]>([])
 const newRoom = ref({
   building: null as string | null,
   floor: null as number | null,
@@ -153,40 +196,36 @@ const newRoom = ref({
   capacity: 4,
   amenities: ''
 })
-
-const buildingOptions = [
-  { label: 'A', value: 'A' },
-  { label: 'B', value: 'B' },
-  { label: 'C', value: 'C' },
-  { label: 'D', value: 'D' },
-  { label: 'E', value: 'E' },
-  { label: 'F', value: 'F' },
-  { label: 'G', value: 'G' },
-  { label: 'L', value: 'L' },
-  { label: 'M', value: 'M' },
-  { label: 'S', value: 'S' },
-  { label: 'S1', value: 'S1' },
-  { label: 'S2', value: 'S2' }
-]
-
-const floorOptions = [
-  { label: '1', value: 1 },
-  { label: '2', value: 2 },
-  { label: '3', value: 3 },
-  { label: '4', value: 4 },
-  { label: '5', value: 5 },
-  { label: '6', value: 6 },
-  { label: '7', value: 7 },
-  { label: '8', value: 8 },
-  { label: '9', value: 9 },
-  { label: '10', value: 10 },
-  { label: '11', value: 11 }
-]
+const newBuilding = ref({
+  id: '',
+  name: '',
+  floors: 1
+})
 
 const typeOptions = [
   { label: 'Коворкинг', value: 'coworking' },
-  { label: 'Переговорная', value: 'meeting' }
+  { label: 'Переговорная', value: 'meeting' },
+  { label: 'Учебная аудитория', value: 'classroom' },
+  { label: 'Лаборатория', value: 'lab' },
+  { label: 'Конференц-зал', value: 'conference' }
 ]
+
+const buildingSelectOptions = computed(() => 
+  buildings.value.map(b => ({
+    label: `${b.id} - ${b.name} (${b.floors} эт.)`,
+    value: b.id
+  }))
+)
+
+const floorOptionsForBuilding = computed(() => {
+  if (!newRoom.value.building) return []
+  const building = buildings.value.find(b => b.id === newRoom.value.building)
+  if (!building) return []
+  return Array.from({ length: building.floors }, (_, i) => i + 1).map(f => ({
+    label: `${f} этаж`,
+    value: f
+  }))
+})
 
 const generatedId = computed(() => {
   if (!newRoom.value.building || !newRoom.value.floor) return '...'
@@ -201,7 +240,7 @@ const bookingColumns = [
   { title: 'ID', key: 'id', width: 140 },
   { title: 'Комната', key: 'roomId', width: 100 },
   { title: 'Пользователь', key: 'userName' },
-  { title: 'Название', key: 'title' },
+  { title: 'Название', key: 'title', ellipsis: { tooltip: true } },
   { title: 'Дата', key: 'date', width: 120 },
   { title: 'Время', key: 'startTime', width: 120, render: (row: Booking) => `${row.startTime}:00 - ${row.endTime}:00` },
   { title: 'Статус', key: 'status', width: 120, render: (row: Booking) => h(NTag, { type: row.status === 'confirmed' ? 'success' : 'warning', size: 'small' }, () => row.status) },
@@ -210,13 +249,31 @@ const bookingColumns = [
 
 const roomColumns = [
   { title: 'ID', key: 'id', width: 100 },
-  { title: 'Название', key: 'name' },
+  { title: 'Название', key: 'name', ellipsis: { tooltip: true } },
   { title: 'Корпус', key: 'building', width: 80, render: (row: Room) => h(NTag, { size: 'small' }, () => row.building) },
   { title: 'Этаж', key: 'floor', width: 70 },
-  { title: 'Тип', key: 'type', width: 120, render: (row: Room) => h(NTag, { type: row.type === 'meeting' ? 'info' : 'default', size: 'small' }, () => row.type === 'meeting' ? 'Переговорная' : 'Коворкинг') },
+  { title: 'Тип', key: 'type', width: 140, render: (row: Room) => h(NTag, { type: row.type === 'meeting' ? 'info' : 'default', size: 'small' }, () => getTypeLabel(row.type)) },
   { title: 'Вмест.', key: 'capacity', width: 70 },
   { title: '', key: 'actions', width: 100, render: (row: Room) => h(NButton, { size: 'small', type: 'error', onClick: () => deleteRoom(row.id) }, () => 'Удалить') }
 ]
+
+const buildingColumns = [
+  { title: 'ID', key: 'id', width: 80 },
+  { title: 'Название', key: 'name' },
+  { title: 'Этажей', key: 'floors', width: 100 },
+  { title: '', key: 'actions', width: 100, render: (row: Building) => h(NButton, { size: 'small', type: 'error', onClick: () => deleteBuilding(row.id) }, () => 'Удалить') }
+]
+
+const getTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    coworking: 'Коворкинг',
+    meeting: 'Переговорная',
+    classroom: 'Аудитория',
+    lab: 'Лаборатория',
+    conference: 'Конференц-зал'
+  }
+  return labels[type] || type
+}
 
 const deleteBooking = async (id: string) => {
   try {
@@ -233,6 +290,16 @@ const deleteRoom = async (id: string) => {
     await $fetch(`/api/rooms/${id}`, { method: 'DELETE' })
     message.success('Комната удалена')
     await loadRooms()
+  } catch (error) {
+    message.error('Ошибка при удалении')
+  }
+}
+
+const deleteBuilding = async (id: string) => {
+  try {
+    await $fetch(`/api/buildings/${id}`, { method: 'DELETE' })
+    message.success('Корпус удалён')
+    await loadBuildings()
   } catch (error) {
     message.error('Ошибка при удалении')
   }
@@ -268,12 +335,40 @@ const addRoom = async () => {
   }
 }
 
+const addBuilding = async () => {
+  if (!newBuilding.value.id || !newBuilding.value.name) {
+    message.warning('Заполните ID и название корпуса')
+    return
+  }
+
+  try {
+    await $fetch('/api/buildings', {
+      method: 'POST',
+      body: {
+        id: newBuilding.value.id.toUpperCase(),
+        name: newBuilding.value.name,
+        floors: newBuilding.value.floors
+      }
+    })
+
+    message.success('Корпус добавлен')
+    newBuilding.value = { id: '', name: '', floors: 1 }
+    await loadBuildings()
+  } catch (error: any) {
+    message.error(error.data?.message || 'Ошибка при добавлении корпуса')
+  }
+}
+
 const loadBookings = async () => {
   bookings.value = await $fetch<Booking[]>('/api/bookings')
 }
 
 const loadRooms = async () => {
   rooms.value = await $fetch<Room[]>('/api/rooms')
+}
+
+const loadBuildings = async () => {
+  buildings.value = await $fetch<Building[]>('/api/buildings')
 }
 
 onMounted(async () => {
@@ -283,6 +378,7 @@ onMounted(async () => {
   }
   await loadBookings()
   await loadRooms()
+  await loadBuildings()
 })
 </script>
 
@@ -304,10 +400,6 @@ onMounted(async () => {
   color: #1E88E5;
   text-decoration: none;
   font-weight: 500;
-}
-
-.back-link:hover {
-  color: #1565C0;
 }
 
 .back-icon {
@@ -369,11 +461,6 @@ onMounted(async () => {
   font-weight: 600;
   background: linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%) !important;
   border: none !important;
-  margin-top: 8px;
-}
-
-.add-btn:hover {
-  background: linear-gradient(135deg, #1565C0 0%, #1E88E5 100%) !important;
 }
 
 .bookings-table :deep(.n-data-table-th) {
