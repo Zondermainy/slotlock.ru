@@ -184,7 +184,7 @@ const filteredRooms = computed(() => {
 })
 
 const buildings = computed(() => {
-  return ['all', ...buildingsList.value.map(b => b.id)]
+  return buildingsList.value.map(b => b.id)
 })
 
 const sectionTitle = computed(() => {
