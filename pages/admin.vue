@@ -359,11 +359,21 @@ const deleteAmenity = async (id: string) => {
 }
 
 const loadRoomTypes = async () => {
-  roomTypesList.value = await $fetch<any[]>('/api/roomTypes')
+  try {
+    roomTypesList.value = await $fetch<any[]>('/api/roomTypes') || []
+  } catch (e) {
+    console.error('Error loading room types:', e)
+    roomTypesList.value = []
+  }
 }
 
 const loadAmenities = async () => {
-  amenitiesList.value = await $fetch<any[]>('/api/amenities')
+  try {
+    amenitiesList.value = await $fetch<any[]>('/api/amenities') || []
+  } catch (e) {
+    console.error('Error loading amenities:', e)
+    amenitiesList.value = []
+  }
 }
 
 const typeOptions = adminRoomTypes
@@ -516,15 +526,30 @@ const addBuilding = async () => {
 }
 
 const loadBookings = async () => {
-  bookings.value = await $fetch<Booking[]>('/api/bookings')
+  try {
+    bookings.value = await $fetch<Booking[]>('/api/bookings') || []
+  } catch (e) {
+    console.error('Error loading bookings:', e)
+    bookings.value = []
+  }
 }
 
 const loadRooms = async () => {
-  rooms.value = await $fetch<Room[]>('/api/rooms')
+  try {
+    rooms.value = await $fetch<Room[]>('/api/rooms') || []
+  } catch (e) {
+    console.error('Error loading rooms:', e)
+    rooms.value = []
+  }
 }
 
 const loadBuildings = async () => {
-  buildings.value = await $fetch<Building[]>('/api/buildings')
+  try {
+    buildings.value = await $fetch<Building[]>('/api/buildings') || []
+  } catch (e) {
+    console.error('Error loading buildings:', e)
+    buildings.value = []
+  }
 }
 
 onMounted(async () => {

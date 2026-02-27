@@ -3,7 +3,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "nuxt build && cp -r server/data \"$(pwd)\"/.output/server/",
+    "build": "nuxt build",
+    "postbuild": "cp -r server/data .output/server/",
     "dev": "nuxt dev",
     "start": "nuxt preview",
     "generate": "nuxt generate",

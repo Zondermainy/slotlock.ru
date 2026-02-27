@@ -1,3 +1,5 @@
+import { join } from 'path'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
@@ -7,7 +9,9 @@ export default defineNuxtConfig({
     storage: {
       data: {
         driver: 'fs',
-        base: './server/data'
+        base: process.env.NODE_ENV === 'production' 
+          ? join(process.cwd(), 'server', 'data')
+          : './server/data'
       }
     }
   }
