@@ -58,7 +58,7 @@
             <n-date-picker
               v-model:value="selectedDateTs"
               type="date"
-              :is-date-disabled="(ts: number) => ts < Date.now() - 86400000"
+              :is-date-disabled="(ts: number) => ts < Date.now() - 86400000 || ts > Date.now() + 14 * 86400000"
               style="width: 100%"
               @update:value="onDateChange"
             />
