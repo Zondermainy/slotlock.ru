@@ -230,13 +230,6 @@ const displayHours = computed(() => {
   return Array.from({ length: 13 }, (_, i) => i + 9)
 })
 
-const startHourOptions = computed(() => 
-  displayHours.value.map(h => ({
-    label: `${h.toString().padStart(2, '0')}:00`,
-    value: h.toString().padStart(2, '0')
-  }))
-)
-
 const endHourOptions = computed(() => {
   const start = parseInt(startHour.value)
   const maxHours = room.value?.type === 'meeting' ? 24 : 8
