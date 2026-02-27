@@ -76,6 +76,12 @@ useHead({
   title: computed(() => isRu.value ? 'ДВФУ Slotlock' : 'FEFU Slotlock')
 })
 
+watch(isRu, (newVal) => {
+  if (import.meta.client) {
+    document.title = newVal ? 'ДВФУ Slotlock' : 'FEFU Slotlock'
+  }
+}, { immediate: true })
+
 const isDark = ref(false)
 
 const toggleTheme = () => {

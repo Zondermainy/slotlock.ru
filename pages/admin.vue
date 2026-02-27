@@ -153,11 +153,48 @@
 </template>
 
 <script setup lang="ts">
-import { NCard, NH1, NDataTable, NButton, NForm, NFormItem, NInput, NInputNumber, NGrid, NGi, NTag, useMessage, NText, NTabs, NTabPane, NSelect, NDivider } from 'naive-ui'
+import { NCard, NH1, NDataTable, NButton, NForm, NFormItem, NInput, NInputNumber, NGrid, NGi, NTag, useMessage, NText, NTabs, NTabPane, NSelect, NDivider, useDialog } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
 import { useI18n } from '~/composables/useI18n'
 
+interface Room {
+  id: string
+  name: string
+  type: string
+  building: string
+  floor: number
+  location: string
+  capacity: number
+  amenities: string[]
+  isActive: boolean
+}
+
+interface Booking {
+  id: string
+  roomId: string
+  userId: number
+  userName: string
+  title: string
+  date: string
+  startTime: string
+  endTime: string
+  status: string
+}
+
+interface Building {
+  id: string
+  name: string
+  floors: number
+}
+
+const router = useRouter()
+const message = useMessage()
+
 const { t, roomTypes, locationTypes } = useI18n()
+
+const rooms = ref<Room[]>([])
+const bookings = ref<Booking[]>([])
+const buildings = ref<Building[]>([])
 
 const newRoom = ref({
   building: null as string | null,
