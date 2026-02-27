@@ -81,12 +81,7 @@
               </n-gi>
               <n-gi>
                 <n-form-item :label="t('roomType')">
-                  <n-select v-model:value="newRoom.type" :options="roomTypes" />
-                </n-form-item>
-              </n-gi>
-              <n-gi :span="2">
-                <n-form-item label="Тип корпуса / Building type">
-                  <n-select v-model:value="newRoom.locationType" :options="locationTypes" placeholder="Библиотека / Library" />
+                  <n-select v-model:value="newRoom.type" :options="adminRoomTypes" />
                 </n-form-item>
               </n-gi>
               <n-gi :span="2">
@@ -101,7 +96,7 @@
               </n-gi>
               <n-gi>
                 <n-form-item :label="t('amenities')">
-                  <n-input v-model:value="newRoom.amenities" :placeholder="'Розетки, Wi-Fi; Power outlets, Wi-Fi'" :maxlength="150" show-count />
+                  <n-select v-model:value="newRoom.amenities" :options="adminAmenities" multiple placeholder="Выберите удобства" />
                 </n-form-item>
               </n-gi>
             </n-grid>
@@ -112,6 +107,75 @@
               {{ t('createRoom') }}
             </n-button>
           </n-form>
+        </n-tab-pane>
+
+        <n-tab-pane name="roomTypes" tab="Типы комнат">
+          <n-data-table
+            :columns="typeColumns"
+            :data="roomTypesList"
+            :row-key="(row: any) => row.id"
+            :bordered="false"
+            class="rooms-table"
+            style="margin-top: 16px"
+          />
+          <n-divider>Добавить тип комнаты</n-divider>
+          <n-form :model="newType" style="margin-top: 16px">
+            <n-grid :cols="3" :x-gap="16">
+              <n-gi>
+                <n-form-item label="ID">
+                  <n-input v-model:value="newType.id" placeholder="coworking" :maxlength="20" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="Название (RU)">
+                  <n-input v-model:value="newType.nameRu" placeholder="Коворкинг" :maxlength="30" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="Name (EN)">
+                  <n-input v-model:value="newType.nameEn" placeholder="Coworking" :maxlength="30" />
+                </n-form-item>
+              </n-gi>
+            </n-grid>
+            <n-button type="primary" class="add-btn" style="margin-top: 8px" @click="addType">
+              Добавить тип
+            </n-button>
+          </n-form>
+        </n-tab-pane>
+
+        <n-tab-pane name="amenitiesTab" tab="Удобства">
+          <n-data-table
+            :columns="amenityColumns"
+            :data="amenitiesList"
+            :row-key="(row: any) => row.id"
+            :bordered="false"
+            class="rooms-table"
+            style="margin-top: 16px"
+          />
+          <n-divider>Добавить удобство</n-divider>
+          <n-form :model="newAmenity" style="margin-top: 16px">
+            <n-grid :cols="3" :x-gap="16">
+              <n-gi>
+                <n-form-item label="ID">
+                  <n-input v-model:value="newAmenity.id" placeholder="wifi" :maxlength="20" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="Название (RU)">
+                  <n-input v-model:value="newAmenity.nameRu" placeholder="Wi-Fi" :maxlength="30" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="Name (EN)">
+                  <n-input v-model:value="newAmenity.nameEn" placeholder="Wi-Fi" :maxlength="30" />
+                </n-form-item>
+              </n-gi>
+            </n-grid>
+            <n-button type="primary" class="add-btn" style="margin-top: 8px" @click="addAmenity">
+              Добавить удобство
+            </n-button>
+          </n-form>
+        </n-tab-pane>
         </n-tab-pane>
         
         <n-tab-pane name="buildings" :tab="t('buildings')">
@@ -190,23 +254,119 @@ interface Building {
 const router = useRouter()
 const message = useMessage()
 
-const { t, roomTypes, locationTypes } = useI18n()
+const { t, roomTypes, locationTypes, isRu } = useI18n()
 
 const rooms = ref<Room[]>([])
 const bookings = ref<Booking[]>([])
 const buildings = ref<Building[]>([])
+const roomTypesList = ref<any[]>([])
+const amenitiesList = ref<any[]>([])
 
 const newRoom = ref({
   building: null as string | null,
   floor: null as number | null,
   type: 'coworking',
   name: '',
-  locationType: null as string | null,
   capacity: 4,
-  amenities: ''
+  amenities: [] as string[]
 })
 
-const typeOptions = roomTypes
+const newType = ref({ id: '', nameRu: '', nameEn: '' })
+const newAmenity = ref({ id: '', nameRu: '', nameEn: '' })
+
+const adminRoomTypes = computed(() => 
+  roomTypesList.value.map(rt => ({
+    label: isRu.value ? rt.nameRu : rt.nameEn,
+    value: rt.id
+  }))
+)
+
+const adminAmenities = computed(() => 
+  amenitiesList.value.map(a => ({
+    label: isRu.value ? a.nameRu : a.nameEn,
+    value: a.id
+  }))
+)
+
+const typeColumns = [
+  { title: 'ID', key: 'id', width: 120 },
+  { title: 'Название (RU)', key: 'nameRu', ellipsis: { tooltip: true } },
+  { title: 'Name (EN)', key: 'nameEn', ellipsis: { tooltip: true } },
+  { title: '', key: 'actions', width: 100, render: (row: any) => h(NButton, { size: 'small', type: 'error', onClick: () => deleteType(row.id) }, () => 'Удалить') }
+]
+
+const amenityColumns = [
+  { title: 'ID', key: 'id', width: 120 },
+  { title: 'Название (RU)', key: 'nameRu', ellipsis: { tooltip: true } },
+  { title: 'Name (EN)', key: 'nameEn', ellipsis: { tooltip: true } },
+  { title: '', key: 'actions', width: 100, render: (row: any) => h(NButton, { size: 'small', type: 'error', onClick: () => deleteAmenity(row.id) }, () => 'Удалить') }
+]
+
+const addType = async () => {
+  if (!newType.value.id || !newType.value.nameRu || !newType.value.nameEn) {
+    message.warning('Заполните ID и названия')
+    return
+  }
+  try {
+    await $fetch('/api/roomTypes', {
+      method: 'POST',
+      body: newType.value
+    })
+    message.success('Тип добавлен')
+    newType.value = { id: '', nameRu: '', nameEn: '' }
+    await loadRoomTypes()
+  } catch (error: any) {
+    message.error(error.data?.message || 'Ошибка')
+  }
+}
+
+const deleteType = async (id: string) => {
+  try {
+    await $fetch(`/api/roomTypes/${id}`, { method: 'DELETE' })
+    message.success('Тип удалён')
+    await loadRoomTypes()
+  } catch (error) {
+    message.error('Ошибка при удалении')
+  }
+}
+
+const addAmenity = async () => {
+  if (!newAmenity.value.id || !newAmenity.value.nameRu || !newAmenity.value.nameEn) {
+    message.warning('Заполните ID и названия')
+    return
+  }
+  try {
+    await $fetch('/api/amenities', {
+      method: 'POST',
+      body: newAmenity.value
+    })
+    message.success('Удобство добавлено')
+    newAmenity.value = { id: '', nameRu: '', nameEn: '' }
+    await loadAmenities()
+  } catch (error: any) {
+    message.error(error.data?.message || 'Ошибка')
+  }
+}
+
+const deleteAmenity = async (id: string) => {
+  try {
+    await $fetch(`/api/amenities/${id}`, { method: 'DELETE' })
+    message.success('Удобство удалено')
+    await loadAmenities()
+  } catch (error) {
+    message.error('Ошибка при удалении')
+  }
+}
+
+const loadRoomTypes = async () => {
+  roomTypesList.value = await $fetch<any[]>('/api/roomTypes')
+}
+
+const loadAmenities = async () => {
+  amenitiesList.value = await $fetch<any[]>('/api/amenities')
+}
+
+const typeOptions = adminRoomTypes
 
 const buildingSelectOptions = computed(() => 
   buildings.value.map(b => ({
@@ -310,8 +470,6 @@ const addRoom = async () => {
   }
 
   try {
-    const amenities = newRoom.value.amenities.split(',').map(s => s.trim()).filter(Boolean)
-    
     await $fetch('/api/rooms', {
       method: 'POST',
       body: {
@@ -320,9 +478,8 @@ const addRoom = async () => {
         type: newRoom.value.type,
         building: newRoom.value.building,
         floor: newRoom.value.floor,
-        locationType: newRoom.value.locationType,
         capacity: newRoom.value.capacity,
-        amenities: newRoom.value.amenities
+        amenities: newRoom.value.amenities || []
       }
     })
 
@@ -378,6 +535,8 @@ onMounted(async () => {
   await loadBookings()
   await loadRooms()
   await loadBuildings()
+  await loadRoomTypes()
+  await loadAmenities()
 })
 </script>
 

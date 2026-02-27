@@ -313,6 +313,30 @@ export const useI18n = () => {
     { label: t('dormitory'), value: 'dormitory' }
   ])
 
+  const fetchRoomTypes = async () => {
+    try {
+      const types = await $fetch<any[]>('/api/roomTypes')
+      return types.map(rt => ({
+        label: isRu.value ? rt.nameRu : rt.nameEn,
+        value: rt.id
+      }))
+    } catch {
+      return roomTypes.value
+    }
+  }
+
+  const fetchAmenities = async () => {
+    try {
+      const amenities = await $fetch<any[]>('/api/amenities')
+      return amenities.map(a => ({
+        label: isRu.value ? a.nameRu : a.nameEn,
+        value: a.id
+      }))
+    } catch {
+      return []
+    }
+  }
+
   return {
     isRu,
     t,
@@ -321,6 +345,8 @@ export const useI18n = () => {
     dayNames,
     monthNames,
     roomTypes,
-    locationTypes
+    locationTypes,
+    fetchRoomTypes,
+    fetchAmenities
   }
 }

@@ -1,0 +1,10 @@
+[
+  { "id": "wifi", "nameRu": "Wi-Fi", "nameEn": "Wi-Fi" },
+  { "id": "power", "nameRu": "Розетки", "nameEn": "Power outlets" },
+  { "id": "printer", "nameRu": "Принтер", "nameEn": "Printer" },
+  { "id": "projector", "nameRu": "Проектор", "nameEn": "Projector" },
+  { "id": "whiteboard", "nameRu": "Маркерная доска", "nameEn": "Whiteboard" },
+  { "id": "ac", "nameRu": "Кондиционер", "nameEn": "Air conditioning" },
+  { "id": "quiet", "nameRu": "Тихая зона", "nameEn": "Quiet zone" },
+  { "id": "food", "nameRu": "Можно с едой", "nameEn": "Food allowed" }
+]

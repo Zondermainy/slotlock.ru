@@ -1,0 +1,7 @@
+[
+  { "id": "coworking", "nameRu": "Коворкинг", "nameEn": "Coworking" },
+  { "id": "meeting", "nameRu": "Переговорная", "nameEn": "Meeting room" },
+  { "id": "classroom", "nameRu": "Аудитория", "nameEn": "Classroom" },
+  { "id": "lab", "nameRu": "Лаборатория", "nameEn": "Laboratory" },
+  { "id": "conference", "nameRu": "Конференц-зал", "nameEn": "Conference hall" }
+]
