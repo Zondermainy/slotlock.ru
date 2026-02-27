@@ -1,0 +1,24 @@
+[
+  {
+    "id": "booking-1772209586268",
+    "roomId": "a11-01",
+    "userId": 1,
+    "userName": "Иван Иванов",
+    "title": "123",
+    "date": "2026-02-28",
+    "startTime": "09",
+    "endTime": "17",
+    "status": "confirmed"
+  },
+  {
+    "id": "booking-1772209600910",
+    "roomId": "a11-11",
+    "userId": 1,
+    "userName": "Иван Иванов",
+    "title": "Без названия",
+    "date": "2026-02-28",
+    "startTime": "09",
+    "endTime": "17",
+    "status": "confirmed"
+  }
+]
