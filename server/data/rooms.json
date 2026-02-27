@@ -1,72 +1,46 @@
 [
   {
-    "id": "a-01",
+    "id": "A11-01",
     "name": "Коворкинг 'У окна'",
     "type": "coworking",
     "building": "A",
+    "floor": 11,
     "location": "А11, Библиотека",
     "capacity": 4,
     "amenities": ["Розетки", "Wi-Fi", "Стол"],
     "isActive": true
   },
   {
-    "id": "a-02",
+    "id": "A11-02",
     "name": "Переговорка 'Остров'",
     "type": "meeting",
     "building": "A",
+    "floor": 11,
     "location": "А11, Библиотека",
     "capacity": 6,
     "amenities": ["Розетки", "Wi-Fi", "Маркерная доска", "Проектор"],
     "isActive": true
   },
   {
-    "id": "b-01",
+    "id": "B02-01",
     "name": "Коворкинг 'Медиа'",
     "type": "coworking",
     "building": "B",
+    "floor": 2,
     "location": "B, Медиацентр",
     "capacity": 8,
     "amenities": ["Розетки", "Wi-Fi", "Стол", "Видеооборудование"],
     "isActive": true
   },
   {
-    "id": "b-02",
-    "name": "Переговорка 'Мост'",
-    "type": "meeting",
-    "building": "B",
-    "location": "B, 2 этаж",
-    "capacity": 10,
-    "amenities": ["Розетки", "Wi-Fi", "Маркерная доска"],
-    "isActive": true
-  },
-  {
-    "id": "c-01",
-    "name": "Коворкинг 'Наука'",
-    "type": "coworking",
-    "building": "C",
-    "location": "C, Лабораторный корпус",
-    "capacity": 6,
-    "amenities": ["Розетки", "Wi-Fi", "Стол"],
-    "isActive": true
-  },
-  {
-    "id": "s-01",
+    "id": "S01-01",
     "name": "Коворкинг 'Студенческий'",
     "type": "coworking",
     "building": "S",
+    "floor": 1,
     "location": "S, Студенческий центр",
     "capacity": 12,
     "amenities": ["Розетки", "Wi-Fi", "Стол", "Зоны отдыха"],
-    "isActive": true
-  },
-  {
-    "id": "m-01",
-    "name": "Переговорка 'Дизайн'",
-    "type": "meeting",
-    "building": "M",
-    "location": "M, Школа искусств",
-    "capacity": 8,
-    "amenities": ["Розетки", "Wi-Fi", "Проектор"],
     "isActive": true
   }
 ]

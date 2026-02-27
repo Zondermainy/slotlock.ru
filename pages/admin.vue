@@ -35,7 +35,7 @@
         </div>
       </template>
       <n-data-table
-        :columns="columns"
+        :columns="bookingColumns"
         :data="bookings"
         :row-key="(row: any) => row.id"
         :bordered="false"
@@ -50,48 +50,69 @@
             <path d="M3 21V7L12 3L21 7V21" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M9 21V13H15V21" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span class="card-title">Добавить комнату</span>
+          <span class="card-title">Управление комнатами</span>
         </div>
       </template>
-      <n-form ref="formRef" :model="newRoom">
-        <n-grid :cols="2" :x-gap="16" :y-gap="8">
-          <n-gi>
-            <n-form-item label="Название" label-placement="left">
-              <n-input v-model:value="newRoom.name" placeholder="Коворкинг 'У окна'" />
-            </n-form-item>
-          </n-gi>
-          <n-gi>
-            <n-form-item label="ID" label-placement="left">
-              <n-input v-model:value="newRoom.id" placeholder="a11-05" />
-            </n-form-item>
-          </n-gi>
-          <n-gi>
-            <n-form-item label="Вместимость" label-placement="left">
-              <n-input-number v-model:value="newRoom.capacity" :min="1" />
-            </n-form-item>
-          </n-gi>
-          <n-gi>
-            <n-form-item label="Удобства" label-placement="left">
-              <n-input v-model:value="newRoom.amenities" placeholder="Розетки, Wi-Fi" />
-            </n-form-item>
-          </n-gi>
-        </n-grid>
-        <n-button type="primary" class="add-btn" @click="addRoom">
-          <template #icon>
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
-              <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </template>
-          Добавить комнату
-        </n-button>
-      </n-form>
+      
+      <n-tabs type="segment">
+        <n-tab-pane name="list" tab="Список комнат">
+          <n-data-table
+            :columns="roomColumns"
+            :data="rooms"
+            :row-key="(row: any) => row.id"
+            :bordered="false"
+            class="rooms-table"
+          />
+        </n-tab-pane>
+        <n-tab-pane name="add" tab="Добавить комнату">
+          <n-form ref="formRef" :model="newRoom" style="margin-top: 16px">
+            <n-grid :cols="2" :x-gap="16" :y-gap="8">
+              <n-gi :span="2">
+                <n-form-item label="Корпус">
+                  <n-select v-model:value="newRoom.building" :options="buildingOptions" placeholder="Выберите корпус" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="Этаж">
+                  <n-select v-model:value="newRoom.floor" :options="floorOptions" placeholder="Выберите этаж" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="Тип">
+                  <n-select v-model:value="newRoom.type" :options="typeOptions" />
+                </n-form-item>
+              </n-gi>
+              <n-gi :span="2">
+                <n-form-item label="Название аудитории">
+                  <n-input v-model:value="newRoom.name" placeholder="Коворкинг 'У окна'" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="Вместимость">
+                  <n-input-number v-model:value="newRoom.capacity" :min="1" style="width: 100%" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="Удобства">
+                  <n-input v-model:value="newRoom.amenities" placeholder="Розетки, Wi-Fi" />
+                </n-form-item>
+              </n-gi>
+            </n-grid>
+            <div style="margin-top: 16px">
+              <n-text depth="2">ID будет сгенерирован автоматически: <strong>{{ generatedId }}</strong></n-text>
+            </div>
+            <n-button type="primary" class="add-btn" style="margin-top: 16px" @click="addRoom">
+              Добавить комнату
+            </n-button>
+          </n-form>
+        </n-tab-pane>
+      </n-tabs>
     </n-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NCard, NH1, NDataTable, NButton, NForm, NFormItem, NInput, NInputNumber, NGrid, NGi, NTag, useMessage, NText } from 'naive-ui'
+import { NCard, NH1, NDataTable, NButton, NForm, NFormItem, NInput, NInputNumber, NGrid, NGi, NTag, useMessage, NText, NTabs, NTabPane, NSelect } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
 
 interface Booking {
@@ -106,60 +127,95 @@ interface Booking {
   status: string
 }
 
+interface Room {
+  id: string
+  name: string
+  type: string
+  building: string
+  floor: number
+  location: string
+  capacity: number
+  amenities: string[]
+  isActive: boolean
+}
+
 const auth = useAuthStore()
 const router = useRouter()
 const message = useMessage()
 
 const bookings = ref<Booking[]>([])
+const rooms = ref<Room[]>([])
 const newRoom = ref({
-  id: '',
+  building: null as string | null,
+  floor: null as number | null,
+  type: 'coworking',
   name: '',
   capacity: 4,
   amenities: ''
 })
 
-const columns = [
-  {
-    title: 'ID',
-    key: 'id',
-    width: 140
-  },
-  {
-    title: 'Комната',
-    key: 'roomId',
-    width: 100
-  },
-  {
-    title: 'Пользователь',
-    key: 'userName'
-  },
-  {
-    title: 'Название',
-    key: 'title'
-  },
-  {
-    title: 'Дата',
-    key: 'date',
-    width: 120
-  },
-  {
-    title: 'Время',
-    key: 'startTime',
-    width: 120,
-    render: (row: Booking) => `${row.startTime}:00 - ${row.endTime}:00`
-  },
-  {
-    title: 'Статус',
-    key: 'status',
-    width: 120,
-    render: (row: Booking) => h(NTag, { type: row.status === 'confirmed' ? 'success' : 'warning', size: 'small' }, () => row.status)
-  },
-  {
-    title: 'Действия',
-    key: 'actions',
-    width: 100,
-    render: (row: Booking) => h(NButton, { size: 'small', type: 'error', onClick: () => deleteBooking(row.id) }, () => 'Удалить')
-  }
+const buildingOptions = [
+  { label: 'A', value: 'A' },
+  { label: 'B', value: 'B' },
+  { label: 'C', value: 'C' },
+  { label: 'D', value: 'D' },
+  { label: 'E', value: 'E' },
+  { label: 'F', value: 'F' },
+  { label: 'G', value: 'G' },
+  { label: 'L', value: 'L' },
+  { label: 'M', value: 'M' },
+  { label: 'S', value: 'S' },
+  { label: 'S1', value: 'S1' },
+  { label: 'S2', value: 'S2' }
+]
+
+const floorOptions = [
+  { label: '1', value: 1 },
+  { label: '2', value: 2 },
+  { label: '3', value: 3 },
+  { label: '4', value: 4 },
+  { label: '5', value: 5 },
+  { label: '6', value: 6 },
+  { label: '7', value: 7 },
+  { label: '8', value: 8 },
+  { label: '9', value: 9 },
+  { label: '10', value: 10 },
+  { label: '11', value: 11 }
+]
+
+const typeOptions = [
+  { label: 'Коворкинг', value: 'coworking' },
+  { label: 'Переговорная', value: 'meeting' }
+]
+
+const generatedId = computed(() => {
+  if (!newRoom.value.building || !newRoom.value.floor) return '...'
+  const floorStr = newRoom.value.floor.toString().padStart(2, '0')
+  const building = newRoom.value.building
+  const sameFloorRooms = rooms.value.filter(r => r.building === building && r.floor === newRoom.value.floor)
+  const num = (sameFloorRooms.length + 1).toString().padStart(2, '0')
+  return `${building}${floorStr}-${num}`
+})
+
+const bookingColumns = [
+  { title: 'ID', key: 'id', width: 140 },
+  { title: 'Комната', key: 'roomId', width: 100 },
+  { title: 'Пользователь', key: 'userName' },
+  { title: 'Название', key: 'title' },
+  { title: 'Дата', key: 'date', width: 120 },
+  { title: 'Время', key: 'startTime', width: 120, render: (row: Booking) => `${row.startTime}:00 - ${row.endTime}:00` },
+  { title: 'Статус', key: 'status', width: 120, render: (row: Booking) => h(NTag, { type: row.status === 'confirmed' ? 'success' : 'warning', size: 'small' }, () => row.status) },
+  { title: '', key: 'actions', width: 100, render: (row: Booking) => h(NButton, { size: 'small', type: 'error', onClick: () => deleteBooking(row.id) }, () => 'Удалить') }
+]
+
+const roomColumns = [
+  { title: 'ID', key: 'id', width: 100 },
+  { title: 'Название', key: 'name' },
+  { title: 'Корпус', key: 'building', width: 80, render: (row: Room) => h(NTag, { size: 'small' }, () => row.building) },
+  { title: 'Этаж', key: 'floor', width: 70 },
+  { title: 'Тип', key: 'type', width: 120, render: (row: Room) => h(NTag, { type: row.type === 'meeting' ? 'info' : 'default', size: 'small' }, () => row.type === 'meeting' ? 'Переговорная' : 'Коворкинг') },
+  { title: 'Вмест.', key: 'capacity', width: 70 },
+  { title: '', key: 'actions', width: 100, render: (row: Room) => h(NButton, { size: 'small', type: 'error', onClick: () => deleteRoom(row.id) }, () => 'Удалить') }
 ]
 
 const deleteBooking = async (id: string) => {
@@ -172,9 +228,19 @@ const deleteBooking = async (id: string) => {
   }
 }
 
+const deleteRoom = async (id: string) => {
+  try {
+    await $fetch(`/api/rooms/${id}`, { method: 'DELETE' })
+    message.success('Комната удалена')
+    await loadRooms()
+  } catch (error) {
+    message.error('Ошибка при удалении')
+  }
+}
+
 const addRoom = async () => {
-  if (!newRoom.value.id || !newRoom.value.name) {
-    message.warning('Заполните название и ID')
+  if (!newRoom.value.building || !newRoom.value.floor || !newRoom.value.name) {
+    message.warning('Заполните корпус, этаж и название')
     return
   }
 
@@ -184,15 +250,19 @@ const addRoom = async () => {
     await $fetch('/api/rooms', {
       method: 'POST',
       body: {
-        id: newRoom.value.id,
+        id: generatedId.value,
         name: newRoom.value.name,
+        type: newRoom.value.type,
+        building: newRoom.value.building,
+        floor: newRoom.value.floor,
         capacity: newRoom.value.capacity,
         amenities
       }
     })
 
     message.success('Комната добавлена')
-    newRoom.value = { id: '', name: '', capacity: 4, amenities: '' }
+    newRoom.value = { building: null, floor: null, type: 'coworking', name: '', capacity: 4, amenities: '' }
+    await loadRooms()
   } catch (error: any) {
     message.error(error.data?.message || 'Ошибка при добавлении комнаты')
   }
@@ -202,12 +272,17 @@ const loadBookings = async () => {
   bookings.value = await $fetch<Booking[]>('/api/bookings')
 }
 
+const loadRooms = async () => {
+  rooms.value = await $fetch<Room[]>('/api/rooms')
+}
+
 onMounted(async () => {
   if (!auth.isLoggedIn || !auth.isAdmin) {
     router.push('/')
     return
   }
   await loadBookings()
+  await loadRooms()
 })
 </script>
 
@@ -229,12 +304,10 @@ onMounted(async () => {
   color: #1E88E5;
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.2s;
 }
 
 .back-link:hover {
   color: #1565C0;
-  transform: translateX(-4px);
 }
 
 .back-icon {
@@ -307,7 +380,7 @@ onMounted(async () => {
   background: #FAFDFF !important;
 }
 
-.bookings-table :deep(.n-data-table-td) {
-  font-size: 14px;
+.rooms-table :deep(.n-data-table-th) {
+  background: #FAFDFF !important;
 }
 </style>
