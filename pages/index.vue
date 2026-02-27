@@ -16,27 +16,26 @@
           </defs>
         </svg>
       </div>
-      <h1>Бронирование коворкингов</h1>
-      <p>Бронирование коворкингов ДВФУ</p>
-      <p class="subtitle">выберите комнату для работы или встречи</p>
+      <h1>{{ t('bookingTitle') }}</h1>
+      <p class="subtitle">{{ t('selectRoom') }}</p>
     </div>
 
     <div v-if="!auth.isLoggedIn" class="auth-warning">
       <n-alert type="info" class="warning-alert">
-        <template #header>Требуется авторизация</template>
-        Для бронирования необходимо <NuxtLink to="/login">войти в систему</NuxtLink>
+        <template #header>{{ t('authRequired') }}</template>
+        {{ t('loginToBook') }} <NuxtLink to="/login">{{ t('login') }}</NuxtLink>
       </n-alert>
     </div>
 
     <div class="building-selector">
-      <n-text strong class="selector-label">Выберите корпус:</n-text>
+      <n-text strong class="selector-label">{{ t('selectBuilding') }}</n-text>
       <div class="building-buttons">
         <n-button
           :type="selectedBuilding === 'all' ? 'primary' : 'default'"
           :class="{ active: selectedBuilding === 'all' }"
           @click="selectedBuilding = 'all'"
         >
-          Все корпуса
+          {{ t('allBuildings') }}
         </n-button>
         <n-button
           v-for="b in buildings"
@@ -45,7 +44,7 @@
           :class="{ active: selectedBuilding === b }"
           @click="selectedBuilding = b"
         >
-          Корпус {{ b }}
+          {{ t('building') }} {{ b }}
         </n-button>
       </div>
     </div>
@@ -60,7 +59,7 @@
         <path d="M3 21V7L12 3L21 7V21" stroke="#90A4AE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M9 21V13H15V21" stroke="#90A4AE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <n-text depth="3">В этом корпусе пока нет доступных комнат</n-text>
+      <n-text depth="3">{{ t('noRooms') }}</n-text>
     </div>
 
     <div v-else class="rooms-grid">
@@ -79,7 +78,7 @@
               </svg>
             </div>
             <n-text strong class="room-name">{{ room.name }}</n-text>
-            <n-tag class="building-tag" size="small">Корпус {{ room.building }}</n-tag>
+            <n-tag class="building-tag" size="small">{{ t('building') }} {{ room.building }}</n-tag>
           </div>
         </template>
         
@@ -103,7 +102,7 @@
               <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>Этаж {{ room.floor }} • До {{ room.capacity }} чел.</span>
+            <span>{{ t('floor') }} {{ room.floor }} • {{ t('capacity') }} {{ room.capacity }} {{ t('people') }}</span>
           </div>
           <div class="room-amenities">
             <n-tag
@@ -128,7 +127,7 @@
                   <path d="M3 10H21" stroke="currentColor" stroke-width="2"/>
                 </svg>
               </template>
-              Выбрать время
+              {{ t('selectTimeBtn') }}
             </n-button>
           </NuxtLink>
         </template>
@@ -140,6 +139,10 @@
 <script setup lang="ts">
 import { NCard, NButton, NText, NTag, NAlert, NH2, NSelect } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
+import { useI18n } from '~/composables/useI18n'
+
+const auth = useAuthStore()
+const { t, isRu } = useI18n()
 
 interface Room {
   id: string
@@ -171,7 +174,6 @@ interface Building {
   floors: number
 }
 
-const auth = useAuthStore()
 const rooms = ref<Room[]>([])
 const bookings = ref<Booking[]>([])
 const buildingsList = ref<Building[]>([])
@@ -190,9 +192,9 @@ const buildings = computed(() => {
 
 const sectionTitle = computed(() => {
   if (selectedBuilding.value === 'all') {
-    return 'Доступные комнаты'
+    return t('availableRooms')
   }
-  return `Корпус ${selectedBuilding.value}`
+  return `${t('building')} ${selectedBuilding.value}`
 })
 
 const getCurrentBooking = (roomId: string) => {
@@ -215,7 +217,7 @@ const getRoomStatus = (roomId: string) => {
   
   if (currentBooking) {
     return {
-      text: `Занято ${currentBooking.startTime}:00 - ${currentBooking.endTime}:00`,
+      text: `${t('busy')} ${currentBooking.startTime}:00 - ${currentBooking.endTime}:00`,
       class: 'status-busy'
     }
   }
@@ -226,13 +228,13 @@ const getRoomStatus = (roomId: string) => {
   
   if (nextBooking) {
     return {
-      text: `Свободна. Следующая бронь: ${nextBooking.startTime}:00`,
+      text: `${t('free')}. ${t('nextBooking')}: ${nextBooking.startTime}:00`,
       class: 'status-free'
     }
   }
   
   return {
-    text: 'Свободна сейчас',
+    text: t('freeNow'),
     class: 'status-free'
   }
 }
@@ -507,5 +509,54 @@ onMounted(async () => {
 .book-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #1565C0 0%, #1E88E5 100%) !important;
   transform: scale(1.02);
+}
+
+.dark .room-icon {
+  background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+}
+
+.dark .room-icon svg {
+  stroke: #64b5f6;
+}
+
+.dark .room-name {
+  color: #64b5f6 !important;
+}
+
+.dark .building-tag {
+  background: #2a2a3e !important;
+  color: #64b5f6 !important;
+  border: 1px solid #3a3a4e !important;
+}
+
+.dark .room-capacity,
+.dark .room-location {
+  color: #a0a0a0 !important;
+}
+
+.dark .info-icon svg {
+  stroke: #64b5f6;
+}
+
+.dark .amenity-tag {
+  background: #2a2a3e !important;
+  color: #64b5f6 !important;
+  border: 1px solid #3a3a4e !important;
+}
+
+.dark .hero h1 {
+  color: #64b5f6;
+}
+
+.dark .selector-label {
+  color: #64b5f6;
+}
+
+.dark .section-title {
+  color: #64b5f6 !important;
+}
+
+.dark .no-rooms-icon svg {
+  stroke: #555;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :theme-overrides="themeOverrides">
+  <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
     <n-message-provider>
       <n-dialog-provider>
         <div class="app-container">
@@ -16,23 +16,39 @@
                       </svg>
                     </div>
                     <div class="logo-text">
-                      <span class="logo-dvfu">ДВФУ</span>
-                      <span class="logo-slotlock">Бронирование</span>
+                      <span class="logo-dvfu">slotlock</span>
+                      <span class="logo-slotlock">ДВФУ</span>
                     </div>
                   </div>
                 </NuxtLink>
                 <div class="header-actions">
+                  <div class="header-controls">
+                    <n-button quaternary circle @click="toggleTheme" class="theme-btn">
+                      <template #icon>
+                        <svg v-if="isDark" viewBox="0 0 24 24" width="20" height="20" fill="none">
+                          <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+                          <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none">
+                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </template>
+                    </n-button>
+                    <n-button quaternary circle @click="toggleLang" class="lang-btn">
+                      {{ isRu ? 'EN' : 'RU' }}
+                    </n-button>
+                  </div>
                   <template v-if="auth.isLoggedIn">
                     <n-text class="user-name">{{ auth.userName }}</n-text>
-                    <n-tag v-if="auth.isAdmin" type="warning" size="small">Админ</n-tag>
+                    <n-tag v-if="auth.isAdmin" type="warning" size="small">{{ t('admin') }}</n-tag>
                     <NuxtLink v-if="auth.isAdmin" to="/admin">
-                      <n-button quaternary>Админка</n-button>
+                      <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
                     </NuxtLink>
-                    <n-button quaternary @click="auth.logout">Выйти</n-button>
+                    <n-button quaternary class="header-btn" @click="auth.logout">{{ t('logout') }}</n-button>
                   </template>
                   <template v-else>
                     <NuxtLink to="/login">
-                      <n-button type="primary">Войти</n-button>
+                      <n-button type="primary">{{ t('login') }}</n-button>
                     </NuxtLink>
                   </template>
                 </div>
@@ -49,10 +65,42 @@
 </template>
 
 <script setup lang="ts">
-import { NConfigProvider, NLayout, NLayoutHeader, NLayoutContent, NButton, NText, NTag, NMessageProvider, NDialogProvider } from 'naive-ui'
+import { NConfigProvider, NLayout, NLayoutHeader, NLayoutContent, NButton, NText, NTag, NMessageProvider, NDialogProvider, darkTheme } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
+import { useI18n } from '~/composables/useI18n'
 
 const auth = useAuthStore()
+const { isRu, t, toggleLang, initLang } = useI18n()
+
+const isDark = ref(false)
+
+const toggleTheme = () => {
+  isDark.value = !isDark.value
+  updateBodyClass()
+  if (import.meta.client) {
+    localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+  }
+}
+
+const updateBodyClass = () => {
+  if (import.meta.client) {
+    const container = document.querySelector('.app-container')
+    if (container) {
+      if (isDark.value) {
+        container.classList.add('dark')
+      } else {
+        container.classList.remove('dark')
+      }
+    }
+    document.body.style.background = isDark.value 
+      ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' 
+      : 'linear-gradient(135deg, #f5f9ff 0%, #e3f2fd 100%)'
+  }
+}
+
+watch(isDark, updateBodyClass)
+
+const theme = computed(() => isDark.value ? darkTheme : null)
 
 const themeOverrides = {
   common: {
@@ -71,6 +119,12 @@ const themeOverrides = {
 
 onMounted(() => {
   auth.restoreSession()
+  initLang()
+  if (import.meta.client) {
+    const savedTheme = localStorage.getItem('theme')
+    isDark.value = savedTheme === 'dark'
+    updateBodyClass()
+  }
 })
 </script>
 
@@ -85,12 +139,18 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: linear-gradient(135deg, #f5f9ff 0%, #e3f2fd 100%);
   min-height: 100vh;
+  transition: background 0.3s ease;
 }
 
 .app-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f9ff 0%, #e3f2fd 100%);
   min-height: 100vh;
+  transition: background 0.3s ease;
+}
+
+.app-container.dark {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
 }
 
 .header {
@@ -142,6 +202,7 @@ body {
   font-size: 22px;
   font-weight: 700;
   letter-spacing: 1px;
+  text-transform: lowercase;
 }
 
 .logo-slotlock {
@@ -154,6 +215,33 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 16px;
+  padding-right: 16px;
+  border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.theme-btn, .lang-btn {
+  color: white !important;
+}
+
+.theme-btn:hover, .lang-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.lang-btn {
+  font-weight: 600;
+  font-size: 12px;
+  min-width: 36px;
+}
+
+.header-btn {
+  color: white !important;
 }
 
 .user-name {
@@ -180,9 +268,20 @@ body {
   background: white;
   box-shadow: 0 2px 12px rgba(30, 136, 229, 0.08);
   border: 1px solid rgba(30, 136, 229, 0.1);
+  transition: all 0.3s ease;
 }
 
 .n-card:hover {
   box-shadow: 0 4px 20px rgba(30, 136, 229, 0.12);
+}
+
+.dark .n-card {
+  background: #2a2a3e;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .n-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 </style>

@@ -5,7 +5,7 @@
         <path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      К списку комнат
+      {{ t('backToList') }}
     </NuxtLink>
 
     <div v-if="!room" class="loading">
@@ -24,12 +24,12 @@
           <div>
             <n-h1 class="room-title">
               {{ room.name }}
-              <n-tag size="small" class="building-badge">Корпус {{ room.building }}</n-tag>
+              <n-tag size="small" class="building-badge">{{ t('building') }} {{ room.building }}</n-tag>
             </n-h1>
             <n-text depth="2" class="room-meta">
-              {{ room.location }} • До {{ room.capacity }} чел.
-              <n-tag v-if="['meeting', 'conference', 'lab'].includes(room.type)" size="small" type="info" style="margin-left: 8px">Круглосуточно</n-tag>
-              <n-tag v-else size="small" type="default" style="margin-left: 8px">09:00 - 21:00</n-tag>
+              {{ room.location }} • {{ t('capacity') }} {{ room.capacity }} {{ t('people') }}
+              <n-tag v-if="['meeting', 'conference', 'lab'].includes(room.type)" size="small" type="info" style="margin-left: 8px">{{ t('roundTheClock') }}</n-tag>
+              <n-tag v-else size="small" type="default" style="margin-left: 8px">{{ t('workingHours') }}</n-tag>
             </n-text>
           </div>
         </div>
@@ -54,7 +54,7 @@
         </template>
 
         <div class="booking-form">
-          <n-form-item label="Дата">
+          <n-form-item :label="t('selectDate')">
             <n-date-picker
               v-model:value="selectedDateTs"
               type="date"
@@ -67,23 +67,23 @@
           <div class="time-range-section">
             <div class="time-labels">
               <div class="time-input-group">
-                <label>Начало</label>
+                <label>{{ t('startTime') }}</label>
                 <n-select v-model:value="startHour" :options="startHourOptions" />
               </div>
               <div class="time-arrow">→</div>
               <div class="time-input-group">
-                <label>Конец</label>
+                <label>{{ t('endTime') }}</label>
                 <n-select v-model:value="endHour" :options="endHourOptions" />
               </div>
             </div>
 
             <div class="duration-badge">
-              Длительность: <strong>{{ duration }}</strong> ч.
+              {{ t('duration') }}: <strong>{{ duration }}</strong> {{ t('hours') }}
             </div>
           </div>
 
-          <n-form-item label="Название (цель бронирования)">
-            <n-input v-model:value="bookingTitle" placeholder="Например: Подготовка к экзамену" />
+          <n-form-item :label="t('bookingTitleLabel')">
+            <n-input v-model:value="bookingTitle" :placeholder="t('bookingPlaceholder')" />
           </n-form-item>
 
           <div v-if="conflictWarning" class="conflict-warning">
@@ -101,7 +101,7 @@
               <path d="M12 17H12.01" stroke="#C62828" stroke-width="2" stroke-linecap="round"/>
               <path d="M10.29 3.86L1.82 18C1.64 18.3 1.55 18.64 1.55 19C1.55 19.35 1.64 19.69 1.82 20C2 20.3 2.25 20.55 2.55 20.73C2.85 20.91 3.19 21 3.54 21H20.46C20.81 21 21.15 20.91 21.45 20.73C21.75 20.55 22 20.3 22.18 20C22.36 19.69 22.45 19.35 22.45 19C22.45 18.64 22.36 18.3 22.18 18L13.71 3.86C13.53 3.56 13.28 3.31 12.98 3.13C12.68 2.95 12.34 2.86 12 2.86C11.66 2.86 11.32 2.95 11.02 3.13C10.72 3.31 10.47 3.56 10.29 3.86Z" stroke="#C62828" stroke-width="2"/>
             </svg>
-            <span>Нельзя забронировать на прошедшее время</span>
+            <span>{{ t('pastTimeError') }}</span>
           </div>
 
           <n-button
@@ -111,7 +111,7 @@
             :disabled="!canBook"
             @click="createBooking"
           >
-            Забронировать
+            {{ t('book') }}
           </n-button>
         </div>
       </n-card>
@@ -123,7 +123,7 @@
               <circle cx="12" cy="12" r="10" stroke="#1E88E5" stroke-width="2"/>
               <path d="M12 6V12L16 14" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            <span>Расписание на {{ formattedSelectedDate }}</span>
+            <span>{{ t('schedule') }} {{ formattedSelectedDate }}</span>
           </div>
         </template>
 
@@ -138,7 +138,7 @@
               <div class="hour-label">{{ h }}:00</div>
               <div class="hour-bar">
                 <span v-if="isFirstHourOfBooking(h)" class="busy-label">
-                  {{ getBookingForHour(h)?.title || 'Занято' }}
+                  {{ getBookingForHour(h)?.title || t('busyTime') }}
                 </span>
               </div>
             </div>
@@ -148,11 +148,11 @@
         <div class="timeline-legend">
           <div class="legend-item">
             <span class="legend-color free"></span>
-            <span>Свободно</span>
+            <span>{{ t('freeTime') }}</span>
           </div>
           <div class="legend-item">
             <span class="legend-color busy"></span>
-            <span>Занято</span>
+            <span>{{ t('busyTime') }}</span>
           </div>
         </div>
       </n-card>
@@ -163,34 +163,13 @@
 <script setup lang="ts">
 import { NCard, NButton, NText, NTag, NSpin, NInput, NFormItem, NSelect, NDatePicker, useMessage } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
-
-interface Room {
-  id: string
-  name: string
-  type: string
-  building: string
-  location: string
-  capacity: number
-  amenities: string[]
-  isActive: boolean
-}
-
-interface Booking {
-  id: string
-  roomId: string
-  userId: number
-  userName: string
-  title: string
-  date: string
-  startTime: string
-  endTime: string
-  status: string
-}
+import { useI18n } from '~/composables/useI18n'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const message = useMessage()
+const { t, dayNames, monthNames, isRu } = useI18n()
 
 const roomId = route.params.id as string
 const room = ref<Room | null>(null)
@@ -331,7 +310,7 @@ const conflictWarning = computed(() => {
       b.startTime <= hourStr && b.endTime > hourStr
     )
     if (booking) {
-      return `Пересечение с бронью "${booking.title}" (${booking.startTime}:00 - ${booking.endTime}:00)`
+      return `${t('conflict')} "${booking.title}" (${booking.startTime}:00 - ${booking.endTime}:00)`
     }
   }
   return null
@@ -342,9 +321,7 @@ const formattedSelectedDate = computed(() => {
   const { day, month, year } = selectedDateLocal.value
   const monthNum = parseInt(month) - 1
   const d = new Date(parseInt(year), monthNum, parseInt(day))
-  const dayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота']
-  const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
-  return `${d.getDate()} ${monthNames[d.getMonth()]} ${dayNames[d.getDay()]}`
+  return `${d.getDate()} ${monthNames.value[d.getMonth()]} ${dayNames.value[d.getDay()]}`
 })
 
 const loadBookings = async () => {
@@ -371,11 +348,11 @@ const createBooking = async () => {
       }
     })
     
-    message.success('Бронирование успешно создано!')
+    message.success(t('bookingSuccess'))
     bookingTitle.value = ''
     await loadBookings()
   } catch (error: any) {
-    message.error(error.data?.message || 'Ошибка при бронировании')
+    message.error(error.data?.message || t('bookingError'))
   } finally {
     isBooking.value = false
   }
@@ -674,5 +651,102 @@ onMounted(async () => {
 
 .legend-color.busy {
   background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+}
+
+.dark .time-range-section {
+  background: #1a1a2e;
+}
+
+.dark .time-input-group label {
+  color: #a0a0a0;
+}
+
+.dark .duration-badge {
+  background: #2a2a3e;
+  color: #e0e0e0;
+}
+
+.dark .duration-badge strong {
+  color: #64b5f6;
+}
+
+.dark .room-amenities .amenity-tag {
+  background: #2a2a3e !important;
+  color: #64b5f6 !important;
+  border: 1px solid #3a3a4e !important;
+}
+
+.dark .room-icon-large {
+  background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+}
+
+.dark .room-icon svg {
+  stroke: #64b5f6;
+}
+
+.dark .room-icon-large svg {
+  stroke: white;
+}
+
+.dark .info-icon svg {
+  stroke: #64b5f6;
+}
+
+.dark .back-link {
+  color: #64b5f6;
+}
+
+.dark .back-link:hover {
+  color: #42A5F5;
+}
+
+.dark .room-name {
+  color: #64b5f6 !important;
+}
+
+.dark .building-tag {
+  background: #2a2a3e !important;
+  color: #64b5f6 !important;
+  border: 1px solid #3a3a4e !important;
+}
+
+.dark .card-header-title {
+  color: #64b5f6;
+}
+
+.dark .card-icon svg {
+  stroke: #64b5f6;
+}
+
+.dark .timeline-row {
+  background: #2a2a3e;
+}
+
+.dark .timeline-row.is-busy {
+  background: linear-gradient(135deg, #3d2020 0%, #4a2828 100%);
+}
+
+.dark .timeline-row .hour-label {
+  color: #a0a0a0;
+}
+
+.dark .timeline-row .hour-bar {
+  color: #a0a0a0;
+}
+
+.dark .timeline-legend {
+  border-top-color: #3a3a4e;
+}
+
+.dark .legend-item {
+  color: #a0a0a0;
+}
+
+.dark .legend-color.free {
+  background: #2a2a3e;
+}
+
+.dark .legend-color.busy {
+  background: linear-gradient(135deg, #3d2020 0%, #4a2828 100%);
 }
 </style>

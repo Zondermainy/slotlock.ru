@@ -15,17 +15,17 @@
             </defs>
           </svg>
         </div>
-        <h1 class="login-title">Добро пожаловать</h1>
-        <p class="login-subtitle">Система бронирования коворкингов ДВФУ</p>
+        <h1 class="login-title">{{ t('welcome') }}</h1>
+        <p class="login-subtitle">{{ t('bookingTitle') }}</p>
       </div>
 
       <n-card class="login-card">
         <n-form>
-          <n-form-item label="Выберите пользователя" label-placement="left" label-align="left">
+          <n-form-item :label="t('user')" label-placement="left" label-align="left">
             <n-select
               v-model:value="selectedUserId"
               :options="userOptions"
-              placeholder="Выберите пользователя"
+              :placeholder="t('user')"
               class="user-select"
             />
           </n-form-item>
@@ -43,7 +43,7 @@
                 <path d="M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </template>
-            Войти в систему
+            {{ t('login') }}
           </n-button>
         </n-form>
         <template #footer>
@@ -53,7 +53,7 @@
               <path d="M12 16V12" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"/>
               <path d="M12 8V8.01" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            <n-text depth="2">Демо-режим: выберите любого пользователя для входа</n-text>
+            <n-text depth="2">{{ t('demoMode') }}</n-text>
           </div>
         </template>
       </n-card>
@@ -64,6 +64,11 @@
 <script setup lang="ts">
 import { NCard, NForm, NFormItem, NSelect, NButton, NText } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
+import { useI18n } from '~/composables/useI18n'
+
+const auth = useAuthStore()
+const router = useRouter()
+const { t } = useI18n()
 
 interface User {
   id: number
@@ -71,9 +76,6 @@ interface User {
   name: string
   role?: string
 }
-
-const auth = useAuthStore()
-const router = useRouter()
 
 const users = ref<User[]>([])
 const selectedUserId = ref<number | null>(null)
@@ -185,5 +187,17 @@ onMounted(async () => {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+}
+
+.dark .login-title {
+  color: #64b5f6;
+}
+
+.dark .login-subtitle {
+  color: #a0a0a0;
+}
+
+.dark .info-icon svg {
+  stroke: #64b5f6;
 }
 </style>

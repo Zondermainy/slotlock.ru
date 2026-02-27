@@ -5,7 +5,7 @@
         <path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      На главную
+      {{ t('backToList') }}
     </NuxtLink>
 
     <div class="admin-header">
@@ -17,8 +17,8 @@
         </svg>
       </div>
       <div>
-        <n-h1 class="admin-title">Админ-панель</n-h1>
-        <n-text depth="2">Управление бронированиями и комнатами</n-text>
+        <n-h1 class="admin-title">{{ t('adminPanel') }}</n-h1>
+        <n-text depth="2">{{ t('bookings') }}</n-text>
       </div>
     </div>
 
@@ -31,7 +31,7 @@
             <path d="M8 2V6" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"/>
             <path d="M3 10H21" stroke="#1E88E5" stroke-width="2"/>
           </svg>
-          <span class="card-title">Все бронирования</span>
+          <span class="card-title">{{ t('bookings') }}</span>
         </div>
       </template>
       <n-data-table
@@ -50,12 +50,12 @@
             <path d="M3 21V7L12 3L21 7V21" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M9 21V13H15V21" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span class="card-title">Управление</span>
+          <span class="card-title">{{ t('rooms') }}</span>
         </div>
       </template>
       
       <n-tabs type="segment">
-        <n-tab-pane name="rooms" tab="Комнаты">
+        <n-tab-pane name="rooms" :tab="t('rooms')">
           <n-data-table
             :columns="roomColumns"
             :data="rooms"
@@ -66,37 +66,37 @@
           />
         </n-tab-pane>
         
-        <n-tab-pane name="addRoom" tab="Добавить комнату">
+        <n-tab-pane name="addRoom" :tab="t('addRoom')">
           <n-form ref="formRef" :model="newRoom" style="margin-top: 16px">
             <n-grid :cols="2" :x-gap="16" :y-gap="8">
               <n-gi :span="2">
-                <n-form-item label="Корпус">
-                  <n-select v-model:value="newRoom.building" :options="buildingSelectOptions" placeholder="Выберите корпус" />
+                <n-form-item :label="t('building')">
+                  <n-select v-model:value="newRoom.building" :options="buildingSelectOptions" :placeholder="t('buildingRequired')" />
                 </n-form-item>
               </n-gi>
               <n-gi>
-                <n-form-item label="Этаж">
-                  <n-select v-model:value="newRoom.floor" :options="floorOptionsForBuilding" placeholder="Выберите этаж" :disabled="!newRoom.building" />
+                <n-form-item :label="t('floor')">
+                  <n-select v-model:value="newRoom.floor" :options="floorOptionsForBuilding" :placeholder="t('floor')" :disabled="!newRoom.building" />
                 </n-form-item>
               </n-gi>
               <n-gi>
-                <n-form-item label="Тип">
-                  <n-select v-model:value="newRoom.type" :options="typeOptions" />
+                <n-form-item :label="t('roomType')">
+                  <n-select v-model:value="newRoom.type" :options="roomTypes" />
                 </n-form-item>
               </n-gi>
               <n-gi :span="2">
-                <n-form-item label="Название аудитории">
-                  <n-input v-model:value="newRoom.name" placeholder="Коворкинг 'У окна'" :maxlength="50" show-count />
+                <n-form-item :label="t('roomName')">
+                  <n-input v-model:value="newRoom.name" :placeholder="t('roomName')" :maxlength="50" show-count />
                 </n-form-item>
               </n-gi>
               <n-gi>
-                <n-form-item label="Вместимость">
+                <n-form-item :label="t('capacity')">
                   <n-input-number v-model:value="newRoom.capacity" :min="1" :max="100" style="width: 100%" />
                 </n-form-item>
               </n-gi>
               <n-gi>
-                <n-form-item label="Удобства">
-                  <n-input v-model:value="newRoom.amenities" placeholder="Розетки, Wi-Fi" :maxlength="100" show-count />
+                <n-form-item :label="t('amenities')">
+                  <n-input v-model:value="newRoom.amenities" :placeholder="t('amenitiesHint')" :maxlength="100" show-count />
                 </n-form-item>
               </n-gi>
             </n-grid>
@@ -104,12 +104,12 @@
               <n-text depth="2">ID будет сгенерирован: <strong>{{ generatedId }}</strong></n-text>
             </div>
             <n-button type="primary" class="add-btn" style="margin-top: 16px" @click="addRoom">
-              Добавить комнату
+              {{ t('createRoom') }}
             </n-button>
           </n-form>
         </n-tab-pane>
         
-        <n-tab-pane name="buildings" tab="Корпуса">
+        <n-tab-pane name="buildings" :tab="t('buildings')">
           <n-data-table
             :columns="buildingColumns"
             :data="buildings"
@@ -118,27 +118,27 @@
             class="rooms-table"
             style="margin-top: 16px"
           />
-          <n-divider>Добавить корпус</n-divider>
+          <n-divider>{{ t('addBuilding') }}</n-divider>
           <n-form :model="newBuilding" style="margin-top: 16px">
             <n-grid :cols="3" :x-gap="16">
               <n-gi>
-                <n-form-item label="Буква (ID)">
+                <n-form-item :label="t('buildingId')">
                   <n-input v-model:value="newBuilding.id" placeholder="A" :maxlength="2" style="text-transform: uppercase" />
                 </n-form-item>
               </n-gi>
               <n-gi>
-                <n-form-item label="Название">
-                  <n-input v-model:value="newBuilding.name" placeholder="Библиотека" :maxlength="30" />
+                <n-form-item :label="t('building')">
+                  <n-input v-model:value="newBuilding.name" placeholder="Library" :maxlength="30" />
                 </n-form-item>
               </n-gi>
               <n-gi>
-                <n-form-item label="Этажей">
+                <n-form-item :label="t('floors')">
                   <n-input-number v-model:value="newBuilding.floors" :min="1" :max="30" />
                 </n-form-item>
               </n-gi>
             </n-grid>
             <n-button type="primary" class="add-btn" style="margin-top: 8px" @click="addBuilding">
-              Добавить корпус
+              {{ t('addBuilding') }}
             </n-button>
           </n-form>
         </n-tab-pane>
@@ -150,6 +150,9 @@
 <script setup lang="ts">
 import { NCard, NH1, NDataTable, NButton, NForm, NFormItem, NInput, NInputNumber, NGrid, NGi, NTag, useMessage, NText, NTabs, NTabPane, NSelect, NDivider } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
+import { useI18n } from '~/composables/useI18n'
+
+const { t, roomTypes } = useI18n()
 
 interface Booking {
   id: string
