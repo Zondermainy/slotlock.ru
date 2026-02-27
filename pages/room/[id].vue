@@ -95,6 +95,15 @@
             <span>{{ conflictWarning }}</span>
           </div>
 
+          <div v-if="isPast" class="conflict-warning">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+              <path d="M12 9V13" stroke="#C62828" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 17H12.01" stroke="#C62828" stroke-width="2" stroke-linecap="round"/>
+              <path d="M10.29 3.86L1.82 18C1.64 18.3 1.55 18.64 1.55 19C1.55 19.35 1.64 19.69 1.82 20C2 20.3 2.25 20.55 2.55 20.73C2.85 20.91 3.19 21 3.54 21H20.46C20.81 21 21.15 20.91 21.45 20.73C21.75 20.55 22 20.3 22.18 20C22.36 19.69 22.45 19.35 22.45 19C22.45 18.64 22.36 18.3 22.18 18L13.71 3.86C13.53 3.56 13.28 3.31 12.98 3.13C12.68 2.95 12.34 2.86 12 2.86C11.66 2.86 11.32 2.95 11.02 3.13C10.72 3.31 10.47 3.56 10.29 3.86Z" stroke="#C62828" stroke-width="2"/>
+            </svg>
+            <span>Нельзя забронировать на прошедшее время</span>
+          </div>
+
           <n-button
             type="primary"
             class="submit-btn"
@@ -194,6 +203,20 @@ const selectedDate = computed(() => {
 
 const onDateChange = () => {
   loadBookings()
+  // Reset to next available hour when date changes
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+  const currentHour = now.getHours() + 1
+  const minHour = room.value?.type === 'meeting' ? 0 : 9
+  
+  if (selectedDate.value === today) {
+    const defaultStart = Math.max(currentHour, minHour)
+    startHour.value = defaultStart.toString().padStart(2, '0')
+    endHour.value = (defaultStart + 1).toString().padStart(2, '0')
+  } else {
+    startHour.value = minHour.toString().padStart(2, '0')
+    endHour.value = (minHour + 1).toString().padStart(2, '0')
+  }
 }
 const startHour = ref<string>('09')
 const endHour = ref<string>('10')
@@ -218,8 +241,15 @@ const endHourOptions = computed(() => {
   const start = parseInt(startHour.value)
   const maxHours = room.value?.type === 'meeting' ? 24 : 8
   const maxEnd = Math.min(start + maxHours, displayHours.value[displayHours.value.length - 1] + 1)
+  
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+  const currentHour = now.getHours()
+  
   const options = []
   for (let h = start + 1; h <= maxEnd; h++) {
+    // Skip past hours for today
+    if (selectedDate.value === today && h <= currentHour) continue
     options.push({
       label: `${h.toString().padStart(2, '0')}:00`,
       value: h.toString().padStart(2, '0')
@@ -232,8 +262,31 @@ const duration = computed(() => {
   return parseInt(endHour.value) - parseInt(startHour.value)
 })
 
+const isPast = computed(() => {
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+  const currentHour = now.getHours()
+  
+  if (selectedDate.value < today) return true
+  if (selectedDate.value === today && parseInt(startHour.value) <= currentHour) return true
+  return false
+})
+
 const canBook = computed(() => {
-  return startHour.value && endHour.value && duration.value > 0 && duration.value <= 8 && !conflictWarning.value
+  return startHour.value && endHour.value && duration.value > 0 && duration.value <= 8 && !conflictWarning.value && !isPast.value
+})
+
+const startHourOptions = computed(() => {
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+  const currentHour = now.getHours()
+  
+  return displayHours.value
+    .filter(h => selectedDate.value > today || h > currentHour)
+    .map(h => ({
+      label: `${h.toString().padStart(2, '0')}:00`,
+      value: h.toString().padStart(2, '0')
+    }))
 })
 
 const dayBookings = computed(() => {
@@ -279,7 +332,8 @@ const conflictWarning = computed(() => {
 
 const formattedSelectedDate = computed(() => {
   if (!selectedDate.value) return ''
-  const d = new Date(selectedDate.value)
+  // Create date at noon to avoid timezone issues
+  const d = new Date(selectedDate.value + 'T12:00:00')
   const dayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота']
   return `${d.getDate()} ${d.getMonth() + 1} ${dayNames[d.getDay()]}`
 })
@@ -333,10 +387,14 @@ onMounted(async () => {
   room.value = await $fetch<Room>(`/api/rooms/${roomId}`)
   await loadBookings()
   
-  if (room.value.type !== 'meeting') {
-    startHour.value = '09'
-    endHour.value = '10'
-  }
+  // Set default hours to next available hour
+  const now = new Date()
+  const currentHour = now.getHours() + 1
+  const minHour = room.value.type === 'meeting' ? 0 : 9
+  const defaultStart = Math.max(currentHour, minHour)
+  
+  startHour.value = defaultStart.toString().padStart(2, '0')
+  endHour.value = (defaultStart + 1).toString().padStart(2, '0')
 })
 </script>
 

@@ -8,7 +8,16 @@ export default defineEventHandler(async (event) => {
   const data = await readFile(filePath, 'utf-8')
   const rooms = JSON.parse(data)
   
-  const location = `${body.building}${body.floor}, ${body.type === 'meeting' ? 'Переговорная' : 'Коворкинг'}`
+  // For single-letter buildings (A, B, C...), append floor. For S1, S2, etc, don't add floor
+  const singleLetterBuildings = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'L', 'M', 'S']
+  const isSingleLetter = singleLetterBuildings.includes(body.building)
+  
+  let location
+  if (isSingleLetter) {
+    location = `${body.building}${body.floor}, ${body.type === 'meeting' ? 'Переговорная' : 'Коворкинг'}`
+  } else {
+    location = `${body.building}, ${body.type === 'meeting' ? 'Переговорная' : 'Коворкинг'}`
+  }
   
   const newRoom = {
     id: body.id,
