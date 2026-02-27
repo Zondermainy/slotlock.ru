@@ -186,11 +186,6 @@ const filteredRooms = computed(() => {
 const buildings = computed(() => {
   return ['all', ...buildingsList.value.map(b => b.id)]
 })
-  if (selectedBuilding.value === 'all') {
-    return rooms.value
-  }
-  return rooms.value.filter(r => r.building === selectedBuilding.value)
-})
 
 const sectionTitle = computed(() => {
   if (selectedBuilding.value === 'all') {
