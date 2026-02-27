@@ -232,8 +232,9 @@ onMounted(async () => {
   bookings.value = await $fetch<Booking[]>('/api/bookings')
   
   setInterval(async () => {
+    rooms.value = await $fetch<Room[]>('/api/rooms')
     bookings.value = await $fetch<Booking[]>('/api/bookings')
-  }, 60000)
+  }, 30000)
 })
 </script>
 

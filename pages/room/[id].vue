@@ -56,10 +56,11 @@
         <div class="booking-form">
           <n-form-item label="Дата">
             <n-date-picker
-              v-model:formatted-value="selectedDate"
+              v-model:value="selectedDateTs"
               type="date"
               :is-date-disabled="(ts: number) => ts < Date.now() - 86400000"
               style="width: 100%"
+              @update:value="onDateChange"
             />
           </n-form-item>
 
@@ -128,7 +129,7 @@
               class="hour-bar"
               :class="{ 'is-busy': isHourBusy(h) }"
             >
-              <span v-if="isHourBusy(h)" class="busy-label">
+              <span v-if="isFirstHourOfBooking(h)" class="busy-label">
                 {{ getBookingForHour(h)?.title || 'Занято' }}
               </span>
             </div>
@@ -185,7 +186,15 @@ const message = useMessage()
 const roomId = route.params.id as string
 const room = ref<Room | null>(null)
 const bookings = ref<Booking[]>([])
-const selectedDate = ref<string>(new Date().toISOString().split('T')[0])
+const selectedDateTs = ref<number>(Date.now())
+const selectedDate = computed(() => {
+  const d = new Date(selectedDateTs.value)
+  return d.toISOString().split('T')[0]
+})
+
+const onDateChange = () => {
+  loadBookings()
+}
 const startHour = ref<string>('09')
 const endHour = ref<string>('10')
 const bookingTitle = ref('')
@@ -236,6 +245,13 @@ const isHourBusy = (hour: number) => {
   return dayBookings.value.some(b => 
     b.startTime <= hourStr && b.endTime > hourStr
   )
+}
+
+const isFirstHourOfBooking = (hour: number) => {
+  const hourStr = hour.toString().padStart(2, '0')
+  const booking = getBookingForHour(hour)
+  if (!booking) return false
+  return booking.startTime === hourStr
 }
 
 const getBookingForHour = (hour: number) => {
@@ -306,10 +322,6 @@ watch(startHour, () => {
   if (parseInt(endHour.value) <= parseInt(startHour.value)) {
     endHour.value = (parseInt(startHour.value) + 1).toString().padStart(2, '0')
   }
-})
-
-watch(selectedDate, () => {
-  loadBookings()
 })
 
 onMounted(async () => {

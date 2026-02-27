@@ -8,10 +8,15 @@ export default defineEventHandler(async (event) => {
   const data = await readFile(filePath, 'utf-8')
   const rooms = JSON.parse(data)
   
+  const location = `${body.building}${body.floor}, ${body.type === 'meeting' ? 'Переговорная' : 'Коворкинг'}`
+  
   const newRoom = {
     id: body.id,
     name: body.name,
-    location: 'А11, Библиотека',
+    type: body.type,
+    building: body.building,
+    floor: body.floor,
+    location: location,
     capacity: body.capacity,
     amenities: body.amenities || [],
     isActive: true
