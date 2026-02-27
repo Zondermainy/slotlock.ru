@@ -17,7 +17,7 @@
                     </div>
                     <div class="logo-text">
                       <span class="logo-dvfu">slotlock</span>
-                      <span class="logo-slotlock">ДВФУ</span>
+                      <span class="logo-slotlock">{{ isRu ? 'ДВФУ' : 'FEFU' }}</span>
                     </div>
                   </div>
                 </NuxtLink>

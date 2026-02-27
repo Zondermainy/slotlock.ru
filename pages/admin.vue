@@ -272,6 +272,7 @@ const newRoom = ref({
 
 const newType = ref({ id: '', nameRu: '', nameEn: '' })
 const newAmenity = ref({ id: '', nameRu: '', nameEn: '' })
+const newBuilding = ref({ id: '', name: '', floors: 1 })
 
 const adminRoomTypes = computed(() => 
   roomTypesList.value.map(rt => ({
@@ -686,5 +687,35 @@ onMounted(async () => {
 
 .dark .n-select {
   background: #2a2a3e !important;
+}
+
+.dark .n-divider {
+  color: #a0a0a0 !important;
+  border-color: #3a3a4e !important;
+}
+
+.dark .n-card {
+  background: #2a2a3e !important;
+}
+
+.dark .n-card .n-card-header {
+  color: #e0e0e0 !important;
+}
+
+.dark .back-link {
+  color: #64b5f6 !important;
+}
+
+.dark .admin-title {
+  color: #64b5f6 !important;
+}
+
+.dark .selector-label {
+  color: #64b5f6 !important;
+}
+
+.dark .room-capacity,
+.dark .room-location {
+  color: #a0a0a0 !important;
 }
 </style>
