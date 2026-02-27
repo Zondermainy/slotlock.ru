@@ -372,6 +372,13 @@ const createBooking = async () => {
     message.success(t('bookingSuccess'))
     bookingTitle.value = ''
     await loadBookings()
+    // Reset time to next available hour after successful booking
+    const now = new Date()
+    const currentHour = now.getHours() + 1
+    const minHour = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 0 : 9
+    const defaultStart = Math.max(currentHour, minHour)
+    startHour.value = defaultStart.toString().padStart(2, '0')
+    endHour.value = (defaultStart + 1).toString().padStart(2, '0')
   } catch (error: any) {
     message.error(error.data?.message || t('bookingError'))
   } finally {
