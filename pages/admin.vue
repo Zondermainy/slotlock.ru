@@ -216,9 +216,14 @@
 </template>
 
 <script setup lang="ts">
+import { h } from 'vue'
 import { NCard, NH1, NDataTable, NButton, NForm, NFormItem, NInput, NInputNumber, NGrid, NGi, NTag, useMessage, NText, NTabs, NTabPane, NSelect, NDivider, useDialog } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
 import { useI18n } from '~/composables/useI18n'
+
+const auth = useAuthStore()
+const router = useRouter()
+const message = useMessage()
 
 interface Room {
   id: string
@@ -249,9 +254,6 @@ interface Building {
   name: string
   floors: number
 }
-
-const router = useRouter()
-const message = useMessage()
 
 const { t, roomTypes, locationTypes, isRu } = useI18n()
 
