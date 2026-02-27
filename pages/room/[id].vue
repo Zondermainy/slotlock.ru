@@ -128,19 +128,19 @@
         </template>
 
         <div class="timeline-visual">
-          <div class="timeline-hours">
-            <div v-for="h in displayHours" :key="h" class="hour-label">{{ h }}:00</div>
-          </div>
-          <div class="timeline-bars">
+          <div class="timeline-rows">
             <div
               v-for="h in displayHours"
-              :key="`bar-${h}`"
-              class="hour-bar"
+              :key="h"
+              class="timeline-row"
               :class="{ 'is-busy': isHourBusy(h) }"
             >
-              <span v-if="isFirstHourOfBooking(h)" class="busy-label">
-                {{ getBookingForHour(h)?.title || 'Занято' }}
-              </span>
+              <div class="hour-label">{{ h }}:00</div>
+              <div class="hour-bar">
+                <span v-if="isFirstHourOfBooking(h)" class="busy-label">
+                  {{ getBookingForHour(h)?.title || 'Занято' }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -198,18 +198,28 @@ const bookings = ref<Booking[]>([])
 const selectedDateTs = ref<number>(Date.now())
 const selectedDate = computed(() => {
   const d = new Date(selectedDateTs.value)
-  return d.toISOString().split('T')[0]
+  const year = d.getFullYear()
+  const month = (d.getMonth() + 1).toString().padStart(2, '0')
+  const day = d.getDate().toString().padStart(2, '0')
+  return `${year}-${month}-${day}`
+})
+
+const selectedDateLocal = computed(() => {
+  const d = new Date(selectedDateTs.value)
+  const year = d.getFullYear()
+  const month = (d.getMonth() + 1).toString().padStart(2, '0')
+  const day = d.getDate().toString().padStart(2, '0')
+  return { year, month, day, dateStr: `${year}-${month}-${day}` }
 })
 
 const onDateChange = () => {
   loadBookings()
-  // Reset to next available hour when date changes
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
+  const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
   const currentHour = now.getHours() + 1
   const minHour = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 0 : 9
   
-  if (selectedDate.value === today) {
+  if (selectedDateLocal.value.dateStr === todayStr) {
     const defaultStart = Math.max(currentHour, minHour)
     startHour.value = defaultStart.toString().padStart(2, '0')
     endHour.value = (defaultStart + 1).toString().padStart(2, '0')
@@ -236,13 +246,12 @@ const endHourOptions = computed(() => {
   const maxEnd = Math.min(start + maxHours, displayHours.value[displayHours.value.length - 1] + 1)
   
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
+  const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
   const currentHour = now.getHours()
   
   const options = []
   for (let h = start + 1; h <= maxEnd; h++) {
-    // Skip past hours for today
-    if (selectedDate.value === today && h <= currentHour) continue
+    if (selectedDateLocal.value.dateStr === todayStr && h <= currentHour) continue
     options.push({
       label: `${h.toString().padStart(2, '0')}:00`,
       value: h.toString().padStart(2, '0')
@@ -257,11 +266,11 @@ const duration = computed(() => {
 
 const isPast = computed(() => {
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
+  const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
   const currentHour = now.getHours()
   
-  if (selectedDate.value < today) return true
-  if (selectedDate.value === today && parseInt(startHour.value) <= currentHour) return true
+  if (selectedDateLocal.value.dateStr < todayStr) return true
+  if (selectedDateLocal.value.dateStr === todayStr && parseInt(startHour.value) <= currentHour) return true
   return false
 })
 
@@ -271,11 +280,11 @@ const canBook = computed(() => {
 
 const startHourOptions = computed(() => {
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
+  const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
   const currentHour = now.getHours()
   
   return displayHours.value
-    .filter(h => selectedDate.value > today || h > currentHour)
+    .filter(h => selectedDateLocal.value.dateStr > todayStr || h > currentHour)
     .map(h => ({
       label: `${h.toString().padStart(2, '0')}:00`,
       value: h.toString().padStart(2, '0')
@@ -283,7 +292,7 @@ const startHourOptions = computed(() => {
 })
 
 const dayBookings = computed(() => {
-  return bookings.value.filter(b => b.date === selectedDate.value && b.roomId === roomId)
+  return bookings.value.filter(b => b.date === selectedDateLocal.value.dateStr && b.roomId === roomId)
 })
 
 const isHourBusy = (hour: number) => {
@@ -297,7 +306,12 @@ const isFirstHourOfBooking = (hour: number) => {
   const hourStr = hour.toString().padStart(2, '0')
   const booking = getBookingForHour(hour)
   if (!booking) return false
-  return booking.startTime === hourStr
+  // Check if this is the first hour of the booking
+  const prevHour = (hour - 1).toString().padStart(2, '0')
+  const prevWasBooked = dayBookings.value.some(b => 
+    b.startTime <= prevHour && b.endTime > prevHour && b.id === booking.id
+  )
+  return !prevWasBooked && booking.startTime === hourStr
 }
 
 const getBookingForHour = (hour: number) => {
@@ -324,11 +338,13 @@ const conflictWarning = computed(() => {
 })
 
 const formattedSelectedDate = computed(() => {
-  if (!selectedDate.value) return ''
-  // Create date at noon to avoid timezone issues
-  const d = new Date(selectedDate.value + 'T12:00:00')
+  if (!selectedDateLocal.value) return ''
+  const { day, month, year } = selectedDateLocal.value
+  const monthNum = parseInt(month) - 1
+  const d = new Date(parseInt(year), monthNum, parseInt(day))
   const dayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота']
-  return `${d.getDate()} ${d.getMonth() + 1} ${dayNames[d.getDay()]}`
+  const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+  return `${d.getDate()} ${monthNames[d.getMonth()]} ${dayNames[d.getDay()]}`
 })
 
 const loadBookings = async () => {
@@ -349,7 +365,7 @@ const createBooking = async () => {
         userId: auth.userId,
         userName: auth.userName,
         title: bookingTitle.value || 'Без названия',
-        date: selectedDate.value,
+        date: selectedDateLocal.value.dateStr,
         startTime: startHour.value,
         endTime: endHour.value
       }
@@ -577,48 +593,48 @@ onMounted(async () => {
 }
 
 .timeline-visual {
-  display: flex;
-  gap: 0;
-  overflow-x: auto;
   padding: 8px 0;
 }
 
-.timeline-hours {
-  flex-shrink: 0;
-  width: 50px;
+.timeline-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.hour-label {
-  height: 32px;
+.timeline-row {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-right: 8px;
-  font-size: 11px;
-  color: #90A4AE;
-}
-
-.timeline-bars {
-  flex: 1;
-  display: flex;
-  min-width: 0;
-}
-
-.hour-bar {
-  flex: 1;
-  min-width: 30px;
-  height: 32px;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
   background: #E3F2FD;
-  border-right: 1px solid white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: #546E7A;
+  min-height: 36px;
 }
 
-.hour-bar.is-busy {
+.timeline-row.is-busy {
   background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+}
+
+.timeline-row .hour-label {
+  width: 40px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #546E7A;
+  flex-shrink: 0;
+}
+
+.timeline-row .hour-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: #546E7A;
+  min-height: 24px;
+}
+
+.timeline-row.is-busy .hour-bar {
+  background: transparent;
 }
 
 .busy-label {
