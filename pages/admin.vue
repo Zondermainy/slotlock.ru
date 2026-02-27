@@ -176,7 +176,6 @@
             </n-button>
           </n-form>
         </n-tab-pane>
-        </n-tab-pane>
         
         <n-tab-pane name="buildings" :tab="t('buildings')">
           <n-data-table
