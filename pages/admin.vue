@@ -85,8 +85,13 @@
                 </n-form-item>
               </n-gi>
               <n-gi :span="2">
+                <n-form-item label="Тип корпуса / Building type">
+                  <n-select v-model:value="newRoom.locationType" :options="locationTypes" placeholder="Библиотека / Library" />
+                </n-form-item>
+              </n-gi>
+              <n-gi :span="2">
                 <n-form-item :label="t('roomName')">
-                  <n-input v-model:value="newRoom.name" :placeholder="t('roomName')" :maxlength="50" show-count />
+                  <n-input v-model:value="newRoom.name" :placeholder="'Коворкинг У окна; Coworking By the window'" :maxlength="80" show-count />
                 </n-form-item>
               </n-gi>
               <n-gi>
@@ -96,7 +101,7 @@
               </n-gi>
               <n-gi>
                 <n-form-item :label="t('amenities')">
-                  <n-input v-model:value="newRoom.amenities" :placeholder="t('amenitiesHint')" :maxlength="100" show-count />
+                  <n-input v-model:value="newRoom.amenities" :placeholder="'Розетки, Wi-Fi; Power outlets, Wi-Fi'" :maxlength="150" show-count />
                 </n-form-item>
               </n-gi>
             </n-grid>
@@ -152,66 +157,19 @@ import { NCard, NH1, NDataTable, NButton, NForm, NFormItem, NInput, NInputNumber
 import { useAuthStore } from '~/stores/auth'
 import { useI18n } from '~/composables/useI18n'
 
-const { t, roomTypes } = useI18n()
+const { t, roomTypes, locationTypes } = useI18n()
 
-interface Booking {
-  id: string
-  roomId: string
-  userId: number
-  userName: string
-  title: string
-  date: string
-  startTime: string
-  endTime: string
-  status: string
-}
-
-interface Room {
-  id: string
-  name: string
-  type: string
-  building: string
-  floor: number
-  location: string
-  capacity: number
-  amenities: string[]
-  isActive: boolean
-}
-
-interface Building {
-  id: string
-  name: string
-  floors: number
-}
-
-const auth = useAuthStore()
-const router = useRouter()
-const message = useMessage()
-
-const bookings = ref<Booking[]>([])
-const rooms = ref<Room[]>([])
-const buildings = ref<Building[]>([])
 const newRoom = ref({
   building: null as string | null,
   floor: null as number | null,
   type: 'coworking',
   name: '',
+  locationType: null as string | null,
   capacity: 4,
   amenities: ''
 })
-const newBuilding = ref({
-  id: '',
-  name: '',
-  floors: 1
-})
 
-const typeOptions = [
-  { label: 'Коворкинг', value: 'coworking' },
-  { label: 'Переговорная', value: 'meeting' },
-  { label: 'Учебная аудитория', value: 'classroom' },
-  { label: 'Лаборатория', value: 'lab' },
-  { label: 'Конференц-зал', value: 'conference' }
-]
+const typeOptions = roomTypes
 
 const buildingSelectOptions = computed(() => 
   buildings.value.map(b => ({
@@ -325,13 +283,14 @@ const addRoom = async () => {
         type: newRoom.value.type,
         building: newRoom.value.building,
         floor: newRoom.value.floor,
+        locationType: newRoom.value.locationType,
         capacity: newRoom.value.capacity,
-        amenities
+        amenities: newRoom.value.amenities
       }
     })
 
     message.success('Комната добавлена')
-    newRoom.value = { building: null, floor: null, type: 'coworking', name: '', capacity: 4, amenities: '' }
+    newRoom.value = { building: null, floor: null, type: 'coworking', name: '', locationType: null, capacity: 4, amenities: '' }
     await loadRooms()
   } catch (error: any) {
     message.error(error.data?.message || 'Ошибка при добавлении комнаты')
@@ -438,6 +397,10 @@ onMounted(async () => {
   margin-bottom: 4px !important;
 }
 
+.dark .admin-title {
+  color: #64b5f6 !important;
+}
+
 .admin-card {
   border-radius: 16px !important;
 }
@@ -459,6 +422,18 @@ onMounted(async () => {
   color: #1565C0;
 }
 
+.dark .card-title {
+  color: #64b5f6;
+}
+
+.dark .card-icon svg {
+  stroke: #64b5f6;
+}
+
+.dark .back-link {
+  color: #64b5f6;
+}
+
 .add-btn {
   height: 44px;
   font-weight: 600;
@@ -472,5 +447,49 @@ onMounted(async () => {
 
 .rooms-table :deep(.n-data-table-th) {
   background: #FAFDFF !important;
+}
+
+.dark .bookings-table :deep(.n-data-table-th) {
+  background: #2a2a3e !important;
+  color: #e0e0e0 !important;
+}
+
+.dark .rooms-table :deep(.n-data-table-th) {
+  background: #2a2a3e !important;
+  color: #e0e0e0 !important;
+}
+
+.dark .bookings-table :deep(.n-data-table-td),
+.dark .rooms-table :deep(.n-data-table-td) {
+  background: #1a1a2e !important;
+  color: #e0e0e0 !important;
+}
+
+.dark .n-tabs .n-tabs-tab {
+  color: #a0a0a0 !important;
+}
+
+.dark .n-tabs .n-tabs-tab.n-tabs-tab--active {
+  color: #64b5f6 !important;
+}
+
+.dark .n-form-item .n-form-item-label {
+  color: #a0a0a0 !important;
+}
+
+.dark .n-input {
+  background: #2a2a3e !important;
+}
+
+.dark .n-input .n-input__input-el {
+  color: #e0e0e0 !important;
+}
+
+.dark .n-input-number {
+  background: #2a2a3e !important;
+}
+
+.dark .n-select {
+  background: #2a2a3e !important;
 }
 </style>

@@ -23,7 +23,7 @@
           </div>
           <div>
             <n-h1 class="room-title">
-              {{ room.name }}
+              {{ getRoomName(room) }}
               <n-tag size="small" class="building-badge">{{ t('building') }} {{ room.building }}</n-tag>
             </n-h1>
             <n-text depth="2" class="room-meta">
@@ -34,7 +34,7 @@
           </div>
         </div>
         <div class="room-amenities">
-          <n-tag v-for="amenity in room.amenities" :key="amenity" size="small" class="amenity-tag">
+          <n-tag v-for="amenity in parseAmenities(room.amenities)" :key="amenity" size="small" class="amenity-tag">
             {{ amenity }}
           </n-tag>
         </div>
@@ -170,6 +170,27 @@ const router = useRouter()
 const auth = useAuthStore()
 const message = useMessage()
 const { t, dayNames, monthNames, isRu } = useI18n()
+
+const parseAmenities = (amenitiesStr: string | string[]) => {
+  if (!amenitiesStr) return []
+  if (Array.isArray(amenitiesStr)) return amenitiesStr
+  
+  return amenitiesStr.split(',').map(s => {
+    if (!isRu.value && s.includes(';')) {
+      const parts = s.split(';')
+      return parts[1]?.trim() || parts[0].trim()
+    }
+    return s.trim()
+  }).filter(Boolean)
+}
+
+const getRoomName = (room: any) => {
+  if (!isRu.value && room.name && room.name.includes(';')) {
+    const parts = room.name.split(';')
+    return parts[1]?.trim() || parts[0].trim()
+  }
+  return room.name
+}
 
 const roomId = route.params.id as string
 const room = ref<Room | null>(null)

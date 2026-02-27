@@ -62,6 +62,7 @@ export const useI18n = () => {
       addRoom: 'Добавить комнату',
       createRoom: 'Создать комнату',
       roomName: 'Название комнаты',
+      roomNameEn: 'Название (англ)',
       roomType: 'Тип комнаты',
       amenities: 'Удобства',
       amenitiesHint: 'Через запятую',
@@ -84,6 +85,13 @@ export const useI18n = () => {
       classroom: 'Аудитория',
       lab: 'Лаборатория',
       conference: 'Конференц-зал',
+
+      // Room location types
+      library: 'Библиотека',
+      studentCenter: 'Студцентр',
+      science: 'Научная библиотека',
+      sports: 'Спортивный корпус',
+      dormitory: 'Общежитие',
       
       // Days
       sunday: 'воскресенье',
@@ -185,6 +193,7 @@ export const useI18n = () => {
       addRoom: 'Add room',
       createRoom: 'Create room',
       roomName: 'Room name',
+      roomNameEn: 'Name (EN)',
       roomType: 'Room type',
       amenities: 'Amenities',
       amenitiesHint: 'Comma separated',
@@ -207,6 +216,13 @@ export const useI18n = () => {
       classroom: 'Classroom',
       lab: 'Laboratory',
       conference: 'Conference hall',
+
+      // Room location types
+      library: 'Library',
+      studentCenter: 'Student Center',
+      science: 'Science Library',
+      sports: 'Sports Hall',
+      dormitory: 'Dormitory',
       
       // Days
       sunday: 'Sunday',
@@ -289,6 +305,14 @@ export const useI18n = () => {
     { label: t('conference'), value: 'conference' }
   ])
 
+  const locationTypes = computed(() => [
+    { label: t('library'), value: 'library' },
+    { label: t('studentCenter'), value: 'studentCenter' },
+    { label: t('science'), value: 'science' },
+    { label: t('sports'), value: 'sports' },
+    { label: t('dormitory'), value: 'dormitory' }
+  ])
+
   return {
     isRu,
     t,
@@ -296,6 +320,7 @@ export const useI18n = () => {
     initLang,
     dayNames,
     monthNames,
-    roomTypes
+    roomTypes,
+    locationTypes
   }
 }

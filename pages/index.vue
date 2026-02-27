@@ -77,7 +77,7 @@
                 <path d="M9 21V13H15V21" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            <n-text strong class="room-name">{{ room.name }}</n-text>
+            <n-text strong class="room-name">{{ getRoomName(room) }}</n-text>
             <n-tag class="building-tag" size="small">{{ t('building') }} {{ room.building }}</n-tag>
           </div>
         </template>
@@ -106,7 +106,7 @@
           </div>
           <div class="room-amenities">
             <n-tag
-              v-for="amenity in room.amenities"
+              v-for="amenity in parseAmenities(room.amenities)"
               :key="amenity"
               size="small"
               class="amenity-tag"
@@ -147,6 +147,7 @@ const { t, isRu } = useI18n()
 interface Room {
   id: string
   name: string
+  nameEn: string
   type: string
   building: string
   floor: number
@@ -196,6 +197,27 @@ const sectionTitle = computed(() => {
   }
   return `${t('building')} ${selectedBuilding.value}`
 })
+
+const getRoomName = (room: Room) => {
+  if (!isRu.value && room.name && room.name.includes(';')) {
+    const parts = room.name.split(';')
+    return parts[1]?.trim() || parts[0].trim()
+  }
+  return room.name
+}
+
+const parseAmenities = (amenitiesStr: string | string[]) => {
+  if (!amenitiesStr) return []
+  if (Array.isArray(amenitiesStr)) return amenitiesStr
+  
+  return amenitiesStr.split(',').map(s => {
+    if (!isRu.value && s.includes(';')) {
+      const parts = s.split(';')
+      return parts[1]?.trim() || parts[0].trim()
+    }
+    return s.trim()
+  }).filter(Boolean)
+}
 
 const getCurrentBooking = (roomId: string) => {
   const now = new Date()

@@ -72,6 +72,10 @@ import { useI18n } from '~/composables/useI18n'
 const auth = useAuthStore()
 const { isRu, t, toggleLang, initLang } = useI18n()
 
+useHead({
+  title: computed(() => isRu.value ? 'ДВФУ Slotlock' : 'FEFU Slotlock')
+})
+
 const isDark = ref(false)
 
 const toggleTheme = () => {

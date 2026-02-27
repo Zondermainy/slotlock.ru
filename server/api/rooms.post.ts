@@ -25,6 +25,7 @@ export default defineEventHandler(async (event) => {
     type: body.type,
     building: body.building,
     floor: body.floor,
+    locationType: body.locationType || null,
     location: location,
     capacity: body.capacity,
     amenities: body.amenities || [],
