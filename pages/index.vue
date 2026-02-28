@@ -82,13 +82,15 @@
           </div>
         </template>
         
-        <div class="room-status" :class="getRoomStatus(room.id).class">
-          <div class="status-dot"></div>
-          <span class="status-text">{{ getRoomStatus(room.id).text }}</span>
-        </div>
-        
-        <div v-if="getRoomStatus(room.id).nextBooking" class="next-booking-badge">
-          {{ getRoomStatus(room.id).nextBooking }}
+        <div class="status-container">
+          <div class="room-status" :class="getRoomStatus(room.id).class">
+            <div class="status-dot"></div>
+            <span class="status-text">{{ getRoomStatus(room.id).text }}</span>
+          </div>
+          
+          <div v-if="getRoomStatus(room.id).nextBooking" class="next-booking-badge">
+            {{ getRoomStatus(room.id).nextBooking }}
+          </div>
         </div>
         
         <div class="room-info">
@@ -256,7 +258,7 @@ const getRoomStatus = (roomId: string) => {
   return {
     text: t('freeNow'),
     class: 'status-free',
-    nextBooking: nextBooking ? `${t('nextBooking')}: ${nextBooking.startTime}:00` : null
+    nextBooking: nextBooking ? `${t('nextBooking')}: ${nextBooking.startTime}:00 - ${nextBooking.endTime}:00` : null
   }
 }
 
@@ -413,7 +415,12 @@ onMounted(async () => {
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
-  margin-bottom: 12px;
+}
+
+.status-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .room-status.status-free {
@@ -433,7 +440,6 @@ onMounted(async () => {
   border-radius: 12px;
   font-size: 11px;
   font-weight: 500;
-  margin-bottom: 12px;
   background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
   color: #E65100;
 }
