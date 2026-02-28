@@ -87,6 +87,10 @@
           <span class="status-text">{{ getRoomStatus(room.id).text }}</span>
         </div>
         
+        <div v-if="getRoomStatus(room.id).nextBooking" class="next-booking-badge">
+          {{ getRoomStatus(room.id).nextBooking }}
+        </div>
+        
         <div class="room-info">
           <div class="room-location">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="info-icon">
@@ -240,7 +244,8 @@ const getRoomStatus = (roomId: string) => {
   if (currentBooking) {
     return {
       text: `${t('busy')} ${currentBooking.startTime}:00 - ${currentBooking.endTime}:00`,
-      class: 'status-busy'
+      class: 'status-busy',
+      nextBooking: null
     }
   }
   
@@ -248,16 +253,10 @@ const getRoomStatus = (roomId: string) => {
     .filter(b => b.roomId === roomId && b.date === now.toISOString().split('T')[0] && parseInt(b.startTime) > currentHour)
     .sort((a, b) => parseInt(a.startTime) - parseInt(b.startTime))[0]
   
-  if (nextBooking) {
-    return {
-      text: `${t('free')}. ${t('nextBooking')}: ${nextBooking.startTime}:00`,
-      class: 'status-free'
-    }
-  }
-  
   return {
     text: t('freeNow'),
-    class: 'status-free'
+    class: 'status-free',
+    nextBooking: nextBooking ? `${t('nextBooking')}: ${nextBooking.startTime}:00` : null
   }
 }
 
@@ -427,6 +426,18 @@ onMounted(async () => {
   color: #C62828;
 }
 
+.next-booking-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+  color: #E65100;
+}
+
 .status-dot {
   width: 8px;
   height: 8px;
@@ -580,5 +591,20 @@ onMounted(async () => {
 
 .dark .no-rooms-icon svg {
   stroke: #555;
+}
+
+.dark .room-status.status-free {
+  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+  color: #a5d6a7;
+}
+
+.dark .room-status.status-busy {
+  background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%);
+  color: #ef9a9a;
+}
+
+.dark .next-booking-badge {
+  background: linear-gradient(135deg, #e65100 0%, #f57c00 100%);
+  color: #ffe0b2;
 }
 </style>
