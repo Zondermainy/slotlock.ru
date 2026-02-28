@@ -141,7 +141,7 @@ export const useI18n = () => {
       login: 'Login',
       
       // Index page
-      bookingTitle: 'DVFU Coworking Booking',
+      bookingTitle: 'FEFU Coworking Booking',
       selectRoom: 'select a room for work or meeting',
       authRequired: 'Authorization required',
       loginToBook: 'To book, please login',
