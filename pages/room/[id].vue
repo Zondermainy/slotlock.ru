@@ -83,7 +83,7 @@
           </div>
 
           <n-form-item :label="t('bookingTitleLabel')">
-            <n-input v-model:value="bookingTitle" :placeholder="t('bookingPlaceholder')" />
+            <n-input v-model:value="bookingTitle" :placeholder="t('bookingPlaceholder')" :maxlength="100" show-count />
           </n-form-item>
 
           <div v-if="conflictWarning" class="conflict-warning">
