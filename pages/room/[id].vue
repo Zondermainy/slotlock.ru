@@ -242,7 +242,7 @@ const displayHours = computed(() => {
 
 const endHourOptions = computed(() => {
   const start = parseInt(startHour.value)
-  const maxHours = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 24 : 8
+  const maxHours = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 24 : 4
   const maxEnd = Math.min(start + maxHours, displayHours.value[displayHours.value.length - 1] + 1)
   
   const now = new Date()
@@ -275,7 +275,7 @@ const isPast = computed(() => {
 })
 
 const canBook = computed(() => {
-  return startHour.value && endHour.value && duration.value > 0 && duration.value <= 8 && !conflictWarning.value && !isPast.value
+  return startHour.value && endHour.value && duration.value > 0 && duration.value <= 4 && !conflictWarning.value && !isPast.value
 })
 
 const startHourOptions = computed(() => {
