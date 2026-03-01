@@ -44,11 +44,11 @@
                     <NuxtLink v-if="auth.isAdmin" to="/admin">
                       <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
                     </NuxtLink>
-                    <n-button quaternary class="header-btn" @click="auth.logout">{{ t('logout') }}</n-button>
+                    <n-button quaternary class="header-btn" @click="handleLogout">{{ t('logout') }}</n-button>
                   </template>
                   <template v-else>
                     <NuxtLink to="/login">
-                      <n-button type="primary">{{ t('login') }}</n-button>
+                      <n-button type="primary" class="login-btn">{{ t('login') }}</n-button>
                     </NuxtLink>
                   </template>
                 </div>
@@ -108,6 +108,13 @@ const toggleTheme = () => {
   if (import.meta.client) {
     localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
   }
+}
+
+const router = useRouter()
+
+const handleLogout = () => {
+  auth.logout()
+  router.push('/login')
 }
 
 const updateBodyClass = () => {
@@ -279,6 +286,16 @@ body {
 
 .header :deep(.n-button) {
   color: white;
+}
+
+.header :deep(.login-btn) {
+  background: white !important;
+  color: #1565C0 !important;
+  font-weight: 600;
+}
+
+.header :deep(.login-btn:hover) {
+  background: rgba(255, 255, 255, 0.9) !important;
 }
 
 .header :deep(.n-button:hover) {
