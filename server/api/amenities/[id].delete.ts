@@ -1,15 +1,13 @@
-import { readFile, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { query } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
-  const filePath = join(process.cwd(), 'server', 'data', 'amenities.json')
   
-  const data = await readFile(filePath, 'utf-8')
-  const amenities = JSON.parse(data)
+  const result = await query('DELETE FROM amenities WHERE id = $1 RETURNING id', [id])
   
-  const filtered = amenities.filter((a: any) => a.id !== id)
-  await writeFile(filePath, JSON.stringify(filtered, null, 2))
+  if (result.rows.length === 0) {
+    throw createError({ statusCode: 404, message: 'Удобство не найдено' })
+  }
   
   return { success: true }
 })

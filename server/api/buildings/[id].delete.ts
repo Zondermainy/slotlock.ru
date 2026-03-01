@@ -1,21 +1,13 @@
-import { readFile, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { query } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
-  const filePath = join(process.cwd(), 'server', 'data', 'buildings.json')
   
-  const data = await readFile(filePath, 'utf-8')
-  let buildings = JSON.parse(data)
+  const result = await query('DELETE FROM buildings WHERE id = $1 RETURNING id', [id])
   
-  const index = buildings.findIndex((b: any) => b.id === id)
-  
-  if (index === -1) {
+  if (result.rows.length === 0) {
     throw createError({ statusCode: 404, message: 'Корпус не найден' })
   }
-  
-  buildings.splice(index, 1)
-  await writeFile(filePath, JSON.stringify(buildings, null, 2))
   
   return { success: true }
 })

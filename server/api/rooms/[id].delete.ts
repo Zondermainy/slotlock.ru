@@ -1,21 +1,13 @@
-import { readFile, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { query } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
-  const filePath = join(process.cwd(), 'server', 'data', 'rooms.json')
   
-  const data = await readFile(filePath, 'utf-8')
-  let rooms = JSON.parse(data)
+  const result = await query('DELETE FROM rooms WHERE id = $1 RETURNING id', [id])
   
-  const index = rooms.findIndex((r: any) => r.id === id)
-  
-  if (index === -1) {
+  if (result.rows.length === 0) {
     throw createError({ statusCode: 404, message: 'Комната не найдена' })
   }
-  
-  rooms.splice(index, 1)
-  await writeFile(filePath, JSON.stringify(rooms, null, 2))
   
   return { success: true }
 })

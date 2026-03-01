@@ -1,26 +1,21 @@
-import { readFile, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { query } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const filePath = join(process.cwd(), 'server', 'data', 'buildings.json')
   
-  const data = await readFile(filePath, 'utf-8')
-  const buildings = JSON.parse(data)
-  
-  // Check if building already exists
-  if (buildings.some((b: any) => b.id === body.id)) {
+  const existing = await query('SELECT id FROM buildings WHERE id = $1', [body.id.toUpperCase()])
+  if (existing.rows.length > 0) {
     throw createError({ statusCode: 400, message: 'Корпус уже существует' })
   }
   
-  const newBuilding = {
-    id: body.id.toUpperCase(),
-    name: body.name,
-    floors: body.floors
+  const result = await query(
+    'INSERT INTO buildings (id, name, floors) VALUES ($1, $2, $3) RETURNING *',
+    [body.id.toUpperCase(), body.name, body.floors]
+  )
+  
+  return {
+    id: result.rows[0].id,
+    name: result.rows[0].name,
+    floors: result.rows[0].floors
   }
-  
-  buildings.push(newBuilding)
-  await writeFile(filePath, JSON.stringify(buildings, null, 2))
-  
-  return newBuilding
 })

@@ -1,37 +1,51 @@
-import { readFile, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { query } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
-  const query = getQuery(event)
-  const filePath = join(process.cwd(), 'server', 'data', 'bookings.json')
-  const data = await readFile(filePath, 'utf-8')
-  let bookings = JSON.parse(data)
+  const urlQuery = getQuery(event)
   
-  // Auto-delete old bookings
+  // Auto-delete old bookings from database
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   const currentHour = now.getHours().toString().padStart(2, '0')
   
-  const initialLength = bookings.length
-  bookings = bookings.filter((b: any) => {
-    // Keep if: date is today and endTime > currentHour, OR date is in the future
-    if (b.date > today) return true
-    if (b.date === today && b.endTime > currentHour) return true
-    return false
-  })
+  await query(
+    `DELETE FROM bookings 
+     WHERE booking_date < $1 
+     OR (booking_date = $1 AND end_time <= $2)`,
+    [today, currentHour]
+  )
   
-  // Only write if we actually removed some bookings
-  if (bookings.length !== initialLength) {
-    await writeFile(filePath, JSON.stringify(bookings, null, 2))
+  let sql = 'SELECT * FROM bookings'
+  const params: any[] = []
+  const conditions: string[] = []
+  
+  if (urlQuery.roomId) {
+    conditions.push(`room_id = $${params.length + 1}`)
+    params.push(urlQuery.roomId)
   }
   
-  if (query.roomId) {
-    bookings = bookings.filter((b: any) => b.roomId === query.roomId)
+  if (urlQuery.date) {
+    conditions.push(`booking_date = $${params.length + 1}`)
+    params.push(urlQuery.date)
   }
   
-  if (query.date) {
-    bookings = bookings.filter((b: any) => b.date === query.date)
+  if (conditions.length > 0) {
+    sql += ' WHERE ' + conditions.join(' AND ')
   }
   
-  return bookings
+  sql += ' ORDER BY booking_date, start_time'
+  
+  const result = await query(sql, params)
+  
+  return result.rows.map(row => ({
+    id: row.id,
+    roomId: row.room_id,
+    userId: row.user_id,
+    userName: row.user_name,
+    title: row.title,
+    date: row.booking_date,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    status: row.status
+  }))
 })

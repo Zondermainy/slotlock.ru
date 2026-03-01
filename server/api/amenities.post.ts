@@ -1,21 +1,16 @@
-import { readFile, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { query } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const filePath = join(process.cwd(), 'server', 'data', 'amenities.json')
   
-  const data = await readFile(filePath, 'utf-8')
-  const amenities = JSON.parse(data)
+  const result = await query(
+    'INSERT INTO amenities (id, name_ru, name_en) VALUES ($1, $2, $3) RETURNING *',
+    [body.id, body.nameRu, body.nameEn]
+  )
   
-  const newAmenity = {
-    id: body.id,
-    nameRu: body.nameRu,
-    nameEn: body.nameEn
+  return {
+    id: result.rows[0].id,
+    nameRu: result.rows[0].name_ru,
+    nameEn: result.rows[0].name_en
   }
-  
-  amenities.push(newAmenity)
-  await writeFile(filePath, JSON.stringify(amenities, null, 2))
-  
-  return newAmenity
 })

@@ -1,14 +1,8 @@
-import { readFile, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { query } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const filePath = join(process.cwd(), 'server', 'data', 'rooms.json')
   
-  const data = await readFile(filePath, 'utf-8')
-  const rooms = JSON.parse(data)
-  
-  // For single-letter buildings (A, B, C...), append floor. For S1, S2, etc, don't add floor
   const singleLetterBuildings = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'L', 'M', 'S']
   const isSingleLetter = singleLetterBuildings.includes(body.building)
   
@@ -19,21 +13,22 @@ export default defineEventHandler(async (event) => {
     location = `${body.building}, ${body.type === 'meeting' ? 'Переговорная' : 'Коворкинг'}`
   }
   
-  const newRoom = {
-    id: body.id,
-    name: body.name,
-    type: body.type,
-    building: body.building,
-    floor: body.floor,
-    locationType: body.locationType || null,
-    location: location,
-    capacity: body.capacity,
-    amenities: body.amenities || [],
-    isActive: true
+  const result = await query(
+    `INSERT INTO rooms (id, name, type, building, floor, location, capacity, amenities, is_active) 
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+    [body.id, body.name, body.type, body.building, body.floor, location, body.capacity, body.amenities || [], true]
+  )
+  
+  const row = result.rows[0]
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    building: row.building,
+    floor: row.floor,
+    location: row.location,
+    capacity: row.capacity,
+    amenities: row.amenities || [],
+    isActive: row.is_active
   }
-  
-  rooms.push(newRoom)
-  await writeFile(filePath, JSON.stringify(rooms, null, 2))
-  
-  return newRoom
 })

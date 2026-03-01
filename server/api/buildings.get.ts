@@ -1,8 +1,10 @@
-import { readFile, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { query } from '~/server/utils/db'
 
 export default defineEventHandler(async () => {
-  const filePath = join(process.cwd(), 'server', 'data', 'buildings.json')
-  const data = await readFile(filePath, 'utf-8')
-  return JSON.parse(data)
+  const result = await query('SELECT * FROM buildings ORDER BY id')
+  return result.rows.map(row => ({
+    id: row.id,
+    name: row.name,
+    floors: row.floors
+  }))
 })
