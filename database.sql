@@ -11,6 +11,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     role VARCHAR(50) DEFAULT 'user',
     strikes INTEGER DEFAULT 0,
@@ -104,11 +105,12 @@ INSERT INTO buildings (id, name, floors) VALUES
     ('S', 'Студенческий центр', 3)
 ON CONFLICT (id) DO NOTHING;
 
--- Insert initial data for users
-INSERT INTO users (email, name, role, strikes, is_blocked) VALUES 
-    ('ivanov.i@student.dvfu.ru', 'Иван Иванов', 'user', 0, FALSE),
-    ('petrova.m@student.dvfu.ru', 'Мария Петрова', 'user', 0, FALSE),
-    ('admin@dvfu.ru', 'Админ Библиотеки', 'admin', 0, FALSE)
+-- Insert initial data for users (passwords are hashed with bcryptjs)
+-- Note: Run seed-admin.ts script after deployment to create admin user
+INSERT INTO users (email, password, name, role, strikes, is_blocked) VALUES 
+    ('ivanov.i@student.dvfu.ru', '$2a$10$rXnLqJZpN6ZxJXGQx0GxEe5EHsGxNQz5nYkQrZm0mXqKkF8.YFz9y', 'Иван Иванов', 'user', 0, FALSE),
+    ('petrova.m@student.dvfu.ru', '$2a$10$rXnLqJZpN6ZxJXGQx0GxEe5EHsGxNQz5nYkQrZm0mXqKkF8.YFz9y', 'Мария Петрова', 'user', 0, FALSE),
+    ('admin@dvfu.ru', '$2a$10$rXnLqJZpN6ZxJXGQx0GxEe5EHsGxNQz5nYkQrZm0mXqKkF8.YFz9y', 'Админ Библиотеки', 'admin', 0, FALSE)
 ON CONFLICT (email) DO NOTHING;
 
 -- Insert initial data for rooms

@@ -15,14 +15,17 @@ export const useAuthStore = defineStore('auth', {
     isLoggedIn: false
   }),
   actions: {
-    async login(userId: number) {
-      const users = await $fetch<User[]>('/api/users')
-      const user = users.find(u => u.id === userId)
+    async login(email: string, password: string) {
+      const user = await $fetch<User>('/api/login', {
+        method: 'POST',
+        body: { email, password }
+      })
+      
       if (user) {
         this.user = user
         this.isLoggedIn = true
         if (import.meta.client) {
-          localStorage.setItem('userId', userId.toString())
+          localStorage.setItem('userId', user.id.toString())
         }
       }
     },
@@ -37,7 +40,14 @@ export const useAuthStore = defineStore('auth', {
       if (import.meta.client) {
         const userId = localStorage.getItem('userId')
         if (userId) {
-          await this.login(parseInt(userId))
+          const users = await $fetch<User[]>('/api/users')
+          const user = users.find(u => u.id === parseInt(userId))
+          if (user) {
+            this.user = user
+            this.isLoggedIn = true
+          } else {
+            localStorage.removeItem('userId')
+          }
         }
       }
     }

@@ -20,20 +20,32 @@
       </div>
 
       <n-card class="login-card">
-        <n-form>
-          <n-form-item :label="t('user')" label-placement="left" label-align="left">
-            <n-select
-              v-model:value="selectedUserId"
-              :options="userOptions"
-              :placeholder="t('user')"
-              class="user-select"
+        <n-form ref="formRef" :model="formData" :rules="rules">
+          <n-form-item :label="t('email')" path="email">
+            <n-input 
+              v-model:value="formData.email" 
+              :placeholder="'example@dvfu.ru'"
+              @keyup.enter="handleLogin"
             />
           </n-form-item>
+          <n-form-item :label="t('password')" path="password">
+            <n-input 
+              v-model:value="formData.password" 
+              type="password"
+              :placeholder="t('enterPassword')"
+              show-password-on="click"
+              @keyup.enter="handleLogin"
+            />
+          </n-form-item>
+          <n-alert v-if="errorMessage" type="error" class="error-alert">
+            {{ errorMessage }}
+          </n-alert>
           <n-button
             type="primary"
             block
             class="login-btn"
-            :disabled="!selectedUserId"
+            :loading="loading"
+            :disabled="!formData.email || !formData.password"
             @click="handleLogin"
           >
             <template #icon>
@@ -48,12 +60,10 @@
         </n-form>
         <template #footer>
           <div class="login-footer">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="info-icon">
-              <circle cx="12" cy="12" r="10" stroke="#1E88E5" stroke-width="2"/>
-              <path d="M12 16V12" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"/>
-              <path d="M12 8V8.01" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <n-text depth="2">{{ t('demoMode') }}</n-text>
+            <n-text depth="2">{{ t('noAccount') }}</n-text>
+            <NuxtLink to="/register" class="register-link">
+              {{ t('register') }}
+            </NuxtLink>
           </div>
         </template>
       </n-card>
@@ -62,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { NCard, NForm, NFormItem, NSelect, NButton, NText } from 'naive-ui'
+import { NCard, NForm, NFormItem, NInput, NButton, NText, NAlert } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
 import { useI18n } from '~/composables/useI18n'
 
@@ -70,36 +80,45 @@ const auth = useAuthStore()
 const router = useRouter()
 const { t } = useI18n()
 
-interface User {
-  id: number
-  email: string
-  name: string
-  role?: string
+const formData = ref({
+  email: '',
+  password: ''
+})
+
+const loading = ref(false)
+const errorMessage = ref('')
+
+const rules = {
+  email: {
+    required: true,
+    message: t('enterEmail'),
+    trigger: 'blur'
+  },
+  password: {
+    required: true,
+    message: t('enterPassword'),
+    trigger: 'blur'
+  }
 }
-
-const users = ref<User[]>([])
-const selectedUserId = ref<number | null>(null)
-
-const userOptions = computed(() => 
-  users.value.map(u => ({
-    label: `${u.name} (${u.email})`,
-    value: u.id
-  }))
-)
 
 const handleLogin = async () => {
-  if (selectedUserId.value) {
-    await auth.login(selectedUserId.value)
+  errorMessage.value = ''
+  loading.value = true
+  
+  try {
+    await auth.login(formData.value.email, formData.value.password)
     router.push('/')
+  } catch (error: any) {
+    errorMessage.value = error.data?.message || t('loginError')
+  } finally {
+    loading.value = false
   }
 }
 
-onMounted(async () => {
+onMounted(() => {
   if (auth.isLoggedIn) {
     router.push('/')
-    return
   }
-  users.value = await $fetch<User[]>('/api/users')
 })
 </script>
 
@@ -159,10 +178,6 @@ onMounted(async () => {
   color: #1565C0;
 }
 
-.user-select {
-  width: 100%;
-}
-
 .login-btn {
   height: 48px;
   font-size: 16px;
@@ -183,10 +198,18 @@ onMounted(async () => {
   gap: 8px;
 }
 
-.info-icon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
+.register-link {
+  color: #1E88E5;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}
+
+.error-alert {
+  margin-bottom: 16px;
 }
 
 .dark .login-title {
@@ -195,9 +218,5 @@ onMounted(async () => {
 
 .dark .login-subtitle {
   color: #a0a0a0;
-}
-
-.dark .info-icon svg {
-  stroke: #64b5f6;
 }
 </style>
