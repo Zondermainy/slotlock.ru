@@ -60,6 +60,7 @@
                 v-model:value="selectedDateTs"
                 type="date"
                 :is-date-disabled="(ts: number) => ts < Date.now() - 86400000 || ts > Date.now() + 14 * 86400000"
+                :format="isRu ? 'd MMMM yyyy' : 'MMMM d, yyyy'"
                 style="width: 100%"
                 @update:value="onDateChange"
               />
@@ -487,14 +488,14 @@ onMounted(async () => {
   room.value = await $fetch<Room>(`/api/rooms/${roomId}`)
   await loadBookings()
   
-  // Set default hours to next available hour
+  // Set default hours to next available slot
   const now = new Date()
-  const currentHour = now.getHours() + 1
+  const currentHour = now.getHours()
   const minHour = room.value.type === 'meeting' ? 0 : 9
-  const defaultStart = Math.max(currentHour, minHour)
+  const defaultStart = Math.max(currentHour + 1, minHour)
   
-  startHour.value = defaultStart.toString().padStart(2, '0')
-  endHour.value = (defaultStart + 1).toString().padStart(2, '0')
+  startHour.value = `${defaultStart.toString().padStart(2, '0')}:00`
+  endHour.value = `${(defaultStart + 1).toString().padStart(2, '0')}:00`
 })
 </script>
 
