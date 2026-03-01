@@ -84,7 +84,7 @@
             </div>
 
             <div class="duration-badge">
-              {{ t('duration') }}: <strong>{{ duration }}</strong> {{ t('hours') }}
+              {{ t('duration') }}: <strong>{{ formattedDuration }}</strong>
             </div>
           </div>
 
@@ -300,6 +300,20 @@ const duration = computed(() => {
   const [startH, startM] = startHour.value.split(':').map(Number)
   const [endH, endM] = endHour.value.split(':').map(Number)
   return (endH * 60 + endM - (startH * 60 + startM)) / 60
+})
+
+const formattedDuration = computed(() => {
+  const totalMinutes = Math.round(duration.value * 60)
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  
+  if (hours > 0 && minutes > 0) {
+    return `${hours}ч. ${minutes}м.`
+  } else if (hours > 0) {
+    return `${hours}ч.`
+  } else {
+    return `${minutes}мин.`
+  }
 })
 
 const isPast = computed(() => {
