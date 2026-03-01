@@ -48,7 +48,7 @@
                   </template>
                   <template v-else>
                     <NuxtLink to="/login">
-                      <n-button type="primary" class="login-btn">{{ t('login') }}</n-button>
+                      <n-button class="login-btn">{{ t('login') }}</n-button>
                     </NuxtLink>
                   </template>
                 </div>
@@ -285,17 +285,18 @@ body {
 }
 
 .header :deep(.n-button) {
-  color: white;
+  color: white !important;
 }
 
 .header :deep(.login-btn) {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
   color: white !important;
   font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
 .header :deep(.login-btn:hover) {
-  background: rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.3) !important;
 }
 
 .header :deep(.n-button:hover) {
