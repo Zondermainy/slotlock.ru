@@ -289,13 +289,13 @@ body {
 }
 
 .header :deep(.login-btn) {
-  background: white !important;
-  color: #1565C0 !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
   font-weight: 600;
 }
 
 .header :deep(.login-btn:hover) {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.25) !important;
 }
 
 .header :deep(.n-button:hover) {
