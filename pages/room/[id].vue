@@ -174,7 +174,6 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const message = useMessage()
-const { t, isRu } = useI18n()
 const { t, dayNames, monthNames, isRu } = useI18n()
 
 const parseAmenities = (amenitiesStr: string | string[]) => {
