@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :locale="isRu ? ruRU : enUS" :theme="darkTheme">
+  <n-config-provider :locale="isRu ? ruRU : enUS" :date-locale="isRu ? ruRU : enUS" :theme="darkTheme">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

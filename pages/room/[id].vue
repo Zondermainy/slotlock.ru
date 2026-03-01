@@ -60,6 +60,7 @@
                 v-model:value="selectedDateTs"
                 type="date"
                 :is-date-disabled="(ts: number) => ts < Date.now() - 86400000 || ts > Date.now() + 14 * 86400000"
+                :format="isRu ? 'dd MMMM yyyy' : 'MMMM dd, yyyy'"
                 style="width: 100%"
                 @update:value="onDateChange"
               />
