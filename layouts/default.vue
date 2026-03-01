@@ -275,8 +275,10 @@ body {
   min-width: 36px;
 }
 
-.header-btn {
+.header-btn, .login-btn {
   color: white !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
 .user-name {
@@ -286,17 +288,6 @@ body {
 
 .header :deep(.n-button) {
   color: white !important;
-}
-
-.header :deep(.login-btn) {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: white !important;
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-}
-
-.header :deep(.login-btn:hover) {
-  background: rgba(255, 255, 255, 0.3) !important;
 }
 
 .header :deep(.n-button:hover) {
