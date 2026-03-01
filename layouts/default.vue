@@ -3,7 +3,7 @@
     <n-message-provider>
       <n-dialog-provider>
         <div class="app-container">
-          <n-layout header style="min-height: 100vh">
+          <n-layout style="min-height: 100vh; display: flex; flex-direction: column">
             <n-layout-header bordered class="header">
               <div class="header-content">
                 <NuxtLink to="/" class="logo">
@@ -57,6 +57,16 @@
             <n-layout-content class="main-content">
               <slot />
             </n-layout-content>
+            <footer class="footer">
+              <div class="footer-content">
+                <div class="footer-project">
+                  <span class="footer-name">Slotlock</span>
+                  <span class="footer-dvfu">{{ isRu ? 'ДВФУ' : 'FEFU' }}</span>
+                </div>
+                <div class="footer-group">Б9122-09.03.02прс</div>
+                <div class="footer-edu">{{ isRu ? 'Учебный проект' : 'Educational project' }}</div>
+              </div>
+            </footer>
           </n-layout>
         </div>
       </n-dialog-provider>
@@ -293,5 +303,56 @@ body {
 
 .dark .n-card:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.footer {
+  background: linear-gradient(135deg, #1565C0 0%, #1E88E5 100%);
+  padding: 24px;
+  margin-top: auto;
+}
+
+.dark .footer {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-project {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.footer-dvfu {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.footer-group {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.footer-edu {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
 }
 </style>
