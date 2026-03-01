@@ -55,25 +55,30 @@
 
         <div class="booking-form">
           <n-form-item :label="t('selectDate')">
-            <n-date-picker
-              v-model:value="selectedDateTs"
-              type="date"
-              :is-date-disabled="(ts: number) => ts < Date.now() - 86400000 || ts > Date.now() + 14 * 86400000"
-              style="width: 100%"
-              @update:value="onDateChange"
-            />
+            <div class="date-picker-wrapper">
+              <n-date-picker
+                v-model:value="selectedDateTs"
+                type="date"
+                :is-date-disabled="(ts: number) => ts < Date.now() - 86400000 || ts > Date.now() + 14 * 86400000"
+                style="width: 100%"
+                @update:value="onDateChange"
+              />
+              <div v-if="formattedSelectedDate" class="formatted-date">
+                {{ formattedSelectedDate }}
+              </div>
+            </div>
           </n-form-item>
 
           <div class="time-range-section">
             <div class="time-labels">
               <div class="time-input-group">
                 <label>{{ t('startTime') }}</label>
-                <n-select v-model:value="startHour" :options="startHourOptions" />
+                <n-select v-model:value="startHour" :options="startTimeOptions" />
               </div>
               <div class="time-arrow">→</div>
               <div class="time-input-group">
                 <label>{{ t('endTime') }}</label>
-                <n-select v-model:value="endHour" :options="endHourOptions" />
+                <n-select v-model:value="endHour" :options="endTimeOptions" />
               </div>
             </div>
 
@@ -169,6 +174,7 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const message = useMessage()
+const { t, isRu } = useI18n()
 const { t, dayNames, monthNames, isRu } = useI18n()
 
 const parseAmenities = (amenitiesStr: string | string[]) => {
@@ -228,8 +234,8 @@ const onDateChange = () => {
     endHour.value = (minHour + 1).toString().padStart(2, '0')
   }
 }
-const startHour = ref<string>('09')
-const endHour = ref<string>('10')
+const startHour = ref<string>('09:00')
+const endHour = ref<string>('09:30')
 const bookingTitle = ref('')
 const isBooking = ref(false)
 
@@ -240,37 +246,74 @@ const displayHours = computed(() => {
   return Array.from({ length: 13 }, (_, i) => i + 9)
 })
 
-const endHourOptions = computed(() => {
-  const start = parseInt(startHour.value)
+const generateTimeOptions = (startFromZero = false) => {
+  const options: { label: string; value: string }[] = []
+  for (const hour of displayHours.value) {
+    for (const minute of [0, 10, 20, 30, 40, 50]) {
+      if (hour === 0 && minute === 0 && !startFromZero) continue
+      const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+      options.push({ label: timeStr, value: timeStr })
+    }
+  }
+  return options
+}
+
+const startTimeOptions = computed(() => {
+  const now = new Date()
+  const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
+  const currentHour = now.getHours()
+  const currentMinute = now.getMinutes()
+  
+  return generateTimeOptions()
+    .filter(t => {
+      if (selectedDateLocal.value.dateStr > todayStr) return true
+      const [h, m] = t.value.split(':').map(Number)
+      if (h > currentHour) return true
+      if (h === currentHour && m > currentMinute) return true
+      return false
+    })
+})
+
+const endTimeOptions = computed(() => {
+  const startParts = startHour.value.split(':').map(Number)
+  const startHourNum = startParts[0]
+  const startMinute = startParts[1]
   const maxHours = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 24 : 4
-  const maxEnd = Math.min(start + maxHours, displayHours.value[displayHours.value.length - 1] + 1)
+  const maxEnd = Math.min(startHourNum + maxHours, displayHours.value[displayHours.value.length - 1] + 1)
   
   const now = new Date()
   const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
   const currentHour = now.getHours()
   
-  const options = []
-  for (let h = start + 1; h <= maxEnd; h++) {
-    if (selectedDateLocal.value.dateStr === todayStr && h <= currentHour) continue
-    options.push({
-      label: `${h.toString().padStart(2, '0')}:00`,
-      value: h.toString().padStart(2, '0')
+  return generateTimeOptions()
+    .filter(t => {
+      const [h, m] = t.value.split(':').map(Number)
+      if (h < startHourNum) return false
+      if (h === startHourNum && m <= startMinute) return false
+      if (h > maxEnd) return false
+      if (selectedDateLocal.value.dateStr === todayStr && h <= currentHour) return false
+      return true
     })
-  }
-  return options
 })
 
 const duration = computed(() => {
-  return parseInt(endHour.value) - parseInt(startHour.value)
+  const [startH, startM] = startHour.value.split(':').map(Number)
+  const [endH, endM] = endHour.value.split(':').map(Number)
+  return (endH * 60 + endM - (startH * 60 + startM)) / 60
 })
 
 const isPast = computed(() => {
   const now = new Date()
   const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
   const currentHour = now.getHours()
+  const currentMinute = now.getMinutes()
+  const [startH, startM] = startHour.value.split(':').map(Number)
   
   if (selectedDateLocal.value.dateStr < todayStr) return true
-  if (selectedDateLocal.value.dateStr === todayStr && parseInt(startHour.value) <= currentHour) return true
+  if (selectedDateLocal.value.dateStr === todayStr) {
+    if (startH < currentHour) return true
+    if (startH === currentHour && startM <= currentMinute) return true
+  }
   return false
 })
 
@@ -278,22 +321,33 @@ const canBook = computed(() => {
   return startHour.value && endHour.value && duration.value > 0 && duration.value <= 4 && !conflictWarning.value && !isPast.value
 })
 
-const startHourOptions = computed(() => {
-  const now = new Date()
-  const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
-  const currentHour = now.getHours()
-  
-  return displayHours.value
-    .filter(h => selectedDateLocal.value.dateStr > todayStr || h > currentHour)
-    .map(h => ({
-      label: `${h.toString().padStart(2, '0')}:00`,
-      value: h.toString().padStart(2, '0')
-    }))
-})
-
 const dayBookings = computed(() => {
   return bookings.value.filter(b => b.date === selectedDateLocal.value.dateStr && b.roomId === roomId)
 })
+
+const isTimeBusy = (timeStr: string) => {
+  const [h, m] = timeStr.split(':').map(Number)
+  const timeInMinutes = h * 60 + m
+  return dayBookings.value.some(b => {
+    const [bh, bm] = b.startTime.split(':').map(Number)
+    const [eh, em] = b.endTime.split(':').map(Number)
+    const bookStart = bh * 60 + bm
+    const bookEnd = eh * 60 + em
+    return timeInMinutes >= bookStart && timeInMinutes < bookEnd
+  })
+}
+
+const getBookingForTime = (timeStr: string) => {
+  const [h, m] = timeStr.split(':').map(Number)
+  const timeInMinutes = h * 60 + m
+  return dayBookings.value.find(b => {
+    const [bh, bm] = b.startTime.split(':').map(Number)
+    const [eh, em] = b.endTime.split(':').map(Number)
+    const bookStart = bh * 60 + bm
+    const bookEnd = eh * 60 + em
+    return timeInMinutes >= bookStart && timeInMinutes < bookEnd
+  })
+}
 
 const isHourBusy = (hour: number) => {
   const hourStr = hour.toString().padStart(2, '0')
@@ -322,16 +376,18 @@ const getBookingForHour = (hour: number) => {
 }
 
 const conflictWarning = computed(() => {
-  const start = parseInt(startHour.value)
-  const end = parseInt(endHour.value)
+  const [startH, startM] = startHour.value.split(':').map(Number)
+  const [endH, endM] = endHour.value.split(':').map(Number)
+  const startMinutes = startH * 60 + startM
+  const endMinutes = endH * 60 + endM
   
-  for (let h = start; h < end; h++) {
-    const hourStr = h.toString().padStart(2, '0')
-    const booking = dayBookings.value.find(b => 
-      b.startTime <= hourStr && b.endTime > hourStr
-    )
+  for (let m = startMinutes; m < endMinutes; m += 10) {
+    const h = Math.floor(m / 60)
+    const min = m % 60
+    const timeStr = `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`
+    const booking = getBookingForTime(timeStr)
     if (booking) {
-      return `${t('conflict')} "${booking.title}" (${booking.startTime}:00 - ${booking.endTime}:00)`
+      return `${t('conflict')} "${booking.title}" (${booking.startTime} - ${booking.endTime})`
     }
   }
   return null
@@ -342,7 +398,15 @@ const formattedSelectedDate = computed(() => {
   const { day, month, year } = selectedDateLocal.value
   const monthNum = parseInt(month) - 1
   const d = new Date(parseInt(year), monthNum, parseInt(day))
-  return `${d.getDate()} ${monthNames.value[d.getMonth()]} ${dayNames.value[d.getDay()]}`
+  const monthsRu = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+  const monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const daysRu = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота']
+  const daysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  
+  if (isRu.value) {
+    return `${d.getDate()} ${monthsRu[d.getMonth()]} ${d.getFullYear()}, ${daysRu[d.getDay()]}`
+  }
+  return `${monthsEn[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} (${daysEn[d.getDay()]})`
 })
 
 const loadBookings = async () => {
@@ -372,13 +436,28 @@ const createBooking = async () => {
     message.success(t('bookingSuccess'))
     bookingTitle.value = ''
     await loadBookings()
-    // Reset time to next available hour after successful booking
+    // Reset time to next available slot after successful booking
     const now = new Date()
-    const currentHour = now.getHours() + 1
+    const currentHour = now.getHours()
+    const currentMinute = now.getMinutes()
+    const roundedMinute = Math.ceil(currentMinute / 10) * 10
     const minHour = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 0 : 9
-    const defaultStart = Math.max(currentHour, minHour)
-    startHour.value = defaultStart.toString().padStart(2, '0')
-    endHour.value = (defaultStart + 1).toString().padStart(2, '0')
+    
+    let nextHour = currentHour
+    let nextMinute = roundedMinute
+    
+    if (nextMinute >= 60) {
+      nextHour += 1
+      nextMinute = 0
+    }
+    
+    if (nextHour < minHour) {
+      nextHour = minHour
+      nextMinute = 0
+    }
+    
+    startHour.value = `${nextHour.toString().padStart(2, '0')}:${nextMinute.toString().padStart(2, '0')}`
+    endHour.value = `${(nextHour + 1).toString().padStart(2, '0')}:${nextMinute.toString().padStart(2, '0')}`
   } catch (error: any) {
     message.error(error.data?.message || t('bookingError'))
   } finally {
@@ -387,8 +466,16 @@ const createBooking = async () => {
 }
 
 watch(startHour, () => {
-  if (parseInt(endHour.value) <= parseInt(startHour.value)) {
-    endHour.value = (parseInt(startHour.value) + 1).toString().padStart(2, '0')
+  const [startH, startM] = startHour.value.split(':').map(Number)
+  const [endH, endM] = endHour.value.split(':').map(Number)
+  const startMinutes = startH * 60 + startM
+  const endMinutes = endH * 60 + endM
+  
+  if (endMinutes <= startMinutes) {
+    const newEndMinutes = startMinutes + 30
+    const newEndH = Math.floor(newEndMinutes / 60) % 24
+    const newEndM = newEndMinutes % 60
+    endHour.value = `${newEndH.toString().padStart(2, '0')}:${newEndM.toString().padStart(2, '0')}`
   }
 })
 
@@ -772,6 +859,17 @@ onMounted(async () => {
 
 .dark .legend-color.free {
   background: #2a2a3e;
+}
+
+.formatted-date {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1565C0;
+}
+
+.dark .formatted-date {
+  color: #64b5f6;
 }
 
 .dark .legend-color.busy {

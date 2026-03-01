@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     user_name VARCHAR(255),
     title VARCHAR(255),
     booking_date DATE NOT NULL,
-    start_time VARCHAR(5) NOT NULL, -- HH:MM format
+    start_time VARCHAR(5) NOT NULL, -- HH:MM format (e.g., "09:00", "09:30")
     end_time VARCHAR(5) NOT NULL,
     status VARCHAR(50) DEFAULT 'confirmed',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
