@@ -200,19 +200,16 @@ interface Building {
 const rooms = ref<Room[]>([])
 const bookings = ref<Booking[]>([])
 const buildingsList = ref<Building[]>([])
+const amenitiesList = ref<any[]>([])
 const selectedBuilding = ref<string>('all')
 const selectedAmenities = ref<string[]>([])
 
-const availableAmenities = [
-  { label: 'Wi-Fi', value: 'wifi' },
-  { label: 'Розетки', value: 'power' },
-  { label: 'Принтер', value: 'printer' },
-  { label: 'Проектор', value: 'projector' },
-  { label: 'Доска', value: 'whiteboard' },
-  { label: 'Кондиционер', value: 'ac' },
-  { label: 'Тихая зона', value: 'quiet' },
-  { label: 'Еда', value: 'food' }
-]
+const availableAmenities = computed(() => {
+  return amenitiesList.value.map(a => ({
+    label: isRu.value ? a.nameRu : a.nameEn,
+    value: a.id
+  }))
+})
 
 const toggleAmenity = (amenity: string) => {
   const index = selectedAmenities.value.indexOf(amenity)
@@ -259,17 +256,16 @@ const getRoomName = (room: Room) => {
   return room.name
 }
 
+const getAmenityName = (id: string) => {
+  const amenity = amenitiesList.value.find(a => a.id === id)
+  if (!amenity) return id
+  return isRu.value ? amenity.nameRu : amenity.nameEn
+}
+
 const parseAmenities = (amenitiesStr: string | string[]) => {
   if (!amenitiesStr) return []
-  if (Array.isArray(amenitiesStr)) return amenitiesStr
-  
-  return amenitiesStr.split(',').map(s => {
-    if (!isRu.value && s.includes(';')) {
-      const parts = s.split(';')
-      return parts[1]?.trim() || parts[0].trim()
-    }
-    return s.trim()
-  }).filter(Boolean)
+  const ids = Array.isArray(amenitiesStr) ? amenitiesStr : amenitiesStr.split(',').map(s => s.trim()).filter(Boolean)
+  return ids.map(id => getAmenityName(id))
 }
 
 const getCurrentBooking = (roomId: string) => {
@@ -333,6 +329,7 @@ onMounted(async () => {
   rooms.value = await $fetch<Room[]>('/api/rooms')
   bookings.value = await $fetch<Booking[]>('/api/bookings')
   buildingsList.value = await $fetch<Building[]>('/api/buildings')
+  amenitiesList.value = await $fetch<any[]>('/api/amenities')
   
   setInterval(async () => {
     rooms.value = await $fetch<Room[]>('/api/rooms')
