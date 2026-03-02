@@ -21,84 +21,57 @@
                     </div>
                   </div>
                 </NuxtLink>
-                <div class="header-actions">
-                  <div class="header-controls">
-                    <n-button quaternary circle @click="toggleTheme" class="theme-btn">
-                      <template #icon>
-                        <svg v-if="isDark" viewBox="0 0 24 24" width="20" height="20" fill="none">
-                          <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
-                          <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none">
-                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </template>
-                    </n-button>
-                    <n-button quaternary circle @click="toggleLang" class="lang-btn">
-                      {{ isRu ? 'EN' : 'RU' }}
-                    </n-button>
-                  </div>
-                  <template v-if="auth.isLoggedIn">
-                    <n-text class="user-name">{{ auth.userName }}</n-text>
-                    <NuxtLink to="/my-bookings">
-                      <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
-                    </NuxtLink>
-                    <NuxtLink v-if="auth.isAdmin" to="/admin">
-                      <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
-                    </NuxtLink>
-                    <n-button quaternary class="header-btn" @click="handleLogout">{{ t('logout') }}</n-button>
+                
+                <n-button quaternary circle @click="showMenu = !showMenu" class="menu-btn">
+                  <template #icon>
+                    <svg v-if="!showMenu" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="3" y1="6" x2="21" y2="6"></line>
+                      <line x1="3" y1="12" x2="21" y2="12"></line>
+                      <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
                   </template>
-                  <template v-else>
-                    <NuxtLink to="/login">
-                      <n-button class="login-btn">{{ t('login') }}</n-button>
-                    </NuxtLink>
-                  </template>
-                  <n-button quaternary circle class="mobile-menu-btn" @click="showMobileMenu = !showMobileMenu">
-                    <template #icon>
-                      <svg v-if="!showMobileMenu" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                      </svg>
-                      <svg v-else viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </template>
-                  </n-button>
-                </div>
+                </n-button>
               </div>
 
-              <div v-if="showMobileMenu" class="mobile-menu">
-                <n-button quaternary circle @click="toggleTheme" class="theme-btn">
-                  <template #icon>
-                    <svg v-if="isDark" viewBox="0 0 24 24" width="20" height="20" fill="none">
-                      <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
-                      <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none">
-                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </template>
-                </n-button>
-                <n-button quaternary @click="toggleLang" class="lang-btn">
-                  {{ isRu ? 'EN' : 'RU' }}
-                </n-button>
-                <template v-if="auth.isLoggedIn">
-                  <span class="mobile-user-name">{{ auth.userName }}</span>
-                  <NuxtLink to="/my-bookings" @click="showMobileMenu = false">
-                    <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
+              <div v-if="showMenu" class="menu-dropdown">
+                <div class="menu-section">
+                  <n-button quaternary @click="toggleTheme">
+                    <template #icon>
+                      <svg v-if="isDark" viewBox="0 0 24 24" width="18" height="18" fill="none">
+                        <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      <svg v-else viewBox="0 0 24 24" width="18" height="18" fill="none">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </template>
+                    {{ isRu ? 'Светлая тема' : 'Light theme' }}
+                  </n-button>
+                  <n-button quaternary @click="toggleLang">
+                    {{ isRu ? 'Английский' : 'Русский' }}
+                  </n-button>
+                </div>
+                
+                <div v-if="auth.isLoggedIn" class="menu-section">
+                  <div class="menu-user">{{ auth.userName }}</div>
+                  <NuxtLink to="/my-bookings" @click="showMenu = false">
+                    <n-button quaternary class="menu-btn-full">{{ t('myBookings') }}</n-button>
                   </NuxtLink>
-                  <NuxtLink v-if="auth.isAdmin" to="/admin" @click="showMobileMenu = false">
-                    <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
+                  <NuxtLink v-if="auth.isAdmin" to="/admin" @click="showMenu = false">
+                    <n-button quaternary class="menu-btn-full">{{ t('adminPanel') }}</n-button>
                   </NuxtLink>
-                  <n-button quaternary class="header-btn" @click="handleLogout(); showMobileMenu = false">{{ t('logout') }}</n-button>
-                </template>
-                <template v-else>
-                  <NuxtLink to="/login" @click="showMobileMenu = false">
-                    <n-button class="login-btn">{{ t('login') }}</n-button>
+                  <n-button quaternary type="error" @click="handleLogout(); showMenu = false">{{ t('logout') }}</n-button>
+                </div>
+                
+                <div v-else class="menu-section">
+                  <NuxtLink to="/login" @click="showMenu = false">
+                    <n-button type="primary" class="menu-btn-full">{{ t('login') }}</n-button>
                   </NuxtLink>
-                </template>
+                </div>
               </div>
             </n-layout-header>
             <n-layout-content class="main-content">
@@ -130,25 +103,35 @@
 </template>
 
 <script setup lang="ts">
-import { NConfigProvider, NLayout, NLayoutHeader, NLayoutContent, NButton, NText, NTag, NMessageProvider, NDialogProvider, darkTheme } from 'naive-ui'
+import { NConfigProvider, NMessageProvider, NDialogProvider, NLayout, NLayoutHeader, NLayoutContent, NButton, NText, useThemeVars } from 'naive-ui'
 import { useAuthStore } from '~/stores/auth'
 import { useI18n } from '~/composables/useI18n'
 
 const auth = useAuthStore()
-const { isRu, t, toggleLang, initLang } = useI18n()
+const { t, isRu, toggleLang } = useI18n()
+const router = useRouter()
 
-useHead({
-  title: computed(() => isRu.value ? 'ДВФУ Slotlock' : 'FEFU Slotlock')
-})
+const theme = ref(null)
+const showMenu = ref(false)
+const isDark = ref(false)
 
-watch(isRu, (newVal) => {
-  if (import.meta.client) {
-    document.title = newVal ? 'ДВФУ Slotlock' : 'FEFU Slotlock'
+const themeOverrides = {
+  common: {
+    primaryColor: '#1E88E5',
+    primaryColorHover: '#1565C0',
+    primaryColorPressed: '#0D47A1'
   }
-}, { immediate: true })
+}
+
+const updateBodyClass = () => {
+  if (import.meta.client) {
+    document.body.classList.toggle('dark', isDark.value)
+  }
+}
+
+watch(isDark, updateBodyClass, { immediate: true })
 
 const isDark = ref(false)
-const showMobileMenu = ref(false)
 
 const toggleTheme = () => {
   isDark.value = !isDark.value
@@ -158,78 +141,36 @@ const toggleTheme = () => {
   }
 }
 
-const router = useRouter()
+if (import.meta.client) {
+  const saved = localStorage.getItem('theme')
+  if (saved === 'dark') {
+    isDark.value = true
+    updateBodyClass()
+  }
+}
 
 const handleLogout = () => {
   auth.logout()
-  router.push('/login')
+  router.push('/')
 }
 
-const updateBodyClass = () => {
-  if (import.meta.client) {
-    const container = document.querySelector('.app-container')
-    if (container) {
-      if (isDark.value) {
-        container.classList.add('dark')
-      } else {
-        container.classList.remove('dark')
-      }
-    }
-    document.body.style.background = isDark.value 
-      ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' 
-      : 'linear-gradient(135deg, #f5f9ff 0%, #e3f2fd 100%)'
-  }
+const container = document.querySelector('.app-container')
+if (container) {
+  container.classList.toggle('dark', isDark.value)
 }
-
-watch(isDark, updateBodyClass)
-
-const theme = computed(() => isDark.value ? darkTheme : null)
-
-const themeOverrides = {
-  common: {
-    primaryColor: '#1E88E5',
-    primaryColorHover: '#42A5F5',
-    primaryColorPressed: '#1565C0',
-    borderRadius: '8px'
-  },
-  Button: {
-    borderRadiusMedium: '8px'
-  },
-  Card: {
-    borderRadius: '12px'
-  }
-}
-
-onMounted(() => {
-  auth.restoreSession()
-  initLang()
-  if (import.meta.client) {
-    const savedTheme = localStorage.getItem('theme')
-    isDark.value = savedTheme === 'dark'
-    updateBodyClass()
-  }
-})
 </script>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: linear-gradient(135deg, #f5f9ff 0%, #e3f2fd 100%);
   min-height: 100vh;
-  transition: background 0.3s ease;
 }
 
 .app-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f9ff 0%, #e3f2fd 100%);
   min-height: 100vh;
-  transition: background 0.3s ease;
 }
 
 .app-container.dark {
@@ -241,22 +182,26 @@ body {
   padding: 0 24px;
   height: 72px;
   display: flex;
-  align-items: center;
-  box-shadow: 0 2px 12px rgba(30, 136, 229, 0.15);
+  flex-direction: column;
+  position: relative;
+}
+
+.header.dark {
+  background: linear-gradient(135deg, #0d47a1 0%, #1565C0 100%);
 }
 
 .header-content {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 72px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .logo {
   text-decoration: none;
-  color: white;
 }
 
 .logo-container {
@@ -270,169 +215,64 @@ body {
   height: 40px;
 }
 
-.logo-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
 .logo-text {
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
 }
 
 .logo-dvfu {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: lowercase;
+  color: white;
+  letter-spacing: -0.5px;
 }
 
 .logo-slotlock {
   font-size: 12px;
-  opacity: 0.85;
-  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.header-actions {
+.menu-btn {
+  color: white !important;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 72px;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #1565C0 0%, #1E88E5 100%);
+  padding: 16px;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.menu-section {
   display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-@media (max-width: 768px) {
-  .header-actions {
-    gap: 8px;
-  }
-  
-  .header-controls {
-    gap: 4px;
-    margin-right: 8px;
-    padding-right: 8px;
-  }
-  
-  .header-btn, .login-btn {
-    padding: 6px 10px !important;
-    font-size: 12px !important;
-  }
-  
-  .user-name {
-    display: none;
-  }
-  
-  .n-tag {
-    display: none;
-  }
-  
-  .desktop-only {
-    display: none !important;
-  }
-  
-  .mobile-menu-btn {
-    display: flex !important;
-  }
-  
-  .mobile-menu-link {
-    display: block;
-    width: 100%;
-  }
-}
-
-.mobile-menu-btn {
-  display: none;
-}
-
-.mobile-menu {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .mobile-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    position: absolute;
-    top: 72px;
-    left: 0;
-    right: 0;
-    background: linear-gradient(135deg, #1565C0 0%, #1E88E5 100%);
-    padding: 16px;
-    z-index: 100;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  }
-  
-  .mobile-user-name {
-    color: white;
-    font-weight: 500;
-    padding: 8px 0;
-  }
-  
-  .mobile-menu .header-btn,
-  .mobile-menu .login-btn {
-    width: 100%;
-    justify-content: flex-start;
-    color: white !important;
-    background: rgba(255,255,255,0.15) !important;
-  }
-  
-  .mobile-menu .lang-btn {
-    color: white !important;
-    justify-content: flex-start;
-  }
-  
-  .mobile-menu a {
-    text-decoration: none;
-  }
-}
-
-.header-controls {
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
-  margin-right: 16px;
-  padding-right: 16px;
-  border-right: 1px solid rgba(255,255,255,0.2);
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-.theme-btn, .lang-btn {
-  color: white !important;
+.menu-section:last-child {
+  border-bottom: none;
 }
 
-.theme-btn:hover, .lang-btn:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.lang-btn {
+.menu-user {
+  color: white;
   font-weight: 600;
-  font-size: 12px;
-  min-width: 36px;
+  padding: 8px 0;
 }
 
-.header-btn, .login-btn {
-  color: white !important;
-  background: rgba(255, 255, 255, 0.2) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-}
-
-.desktop-only {
-  display: block;
-}
-
-.mobile-menu-btn {
-  display: none;
-}
-
-.user-name {
-  color: white !important;
-  font-weight: 500;
-}
-
-.header :deep(.n-button) {
+.menu-btn-full {
+  width: 100%;
+  justify-content: flex-start;
   color: white !important;
 }
 
-.header :deep(.n-button:hover) {
-  background: rgba(255, 255, 255, 0.15);
+.menu-btn-full:hover {
+  background: rgba(255,255,255,0.1) !important;
 }
 
 .main-content {
@@ -440,27 +280,6 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-}
-
-.n-card {
-  background: white;
-  box-shadow: 0 2px 12px rgba(30, 136, 229, 0.08);
-  border: 1px solid rgba(30, 136, 229, 0.1);
-  transition: all 0.3s ease;
-}
-
-.n-card:hover {
-  box-shadow: 0 4px 20px rgba(30, 136, 229, 0.12);
-}
-
-.dark .n-card {
-  background: #2a2a3e;
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-
-.dark .n-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .footer {
@@ -491,43 +310,38 @@ body {
 }
 
 .footer-name {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   color: white;
 }
 
 .footer-dvfu {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 500;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .footer-group {
+  color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
 }
 
 .footer-edu {
+  color: rgba(255, 255, 255, 0.6);
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  font-style: italic;
 }
 
 .footer-links {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
 .github-link {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   font-size: 14px;
-  font-weight: 500;
   transition: color 0.2s;
 }
 
