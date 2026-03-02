@@ -141,7 +141,7 @@
               class="timeline-row"
               :class="{ 'is-busy': isHourBusy(h) }"
             >
-              <div class="hour-label">{{ h }}:00</div>
+              <div class="hour-label">{{ h.toString().padStart(2, '0') }}:00</div>
               <div class="hour-bar">
                 <span v-if="isFirstHourOfBooking(h)" class="busy-label">
                   {{ getBookingForHour(h)?.title || t('busyTime') }}
@@ -365,9 +365,10 @@ const getBookingForTime = (timeStr: string) => {
 
 const isHourBusy = (hour: number) => {
   const hourStr = hour.toString().padStart(2, '0')
-  return dayBookings.value.some(b => 
-    b.startTime <= hourStr && b.endTime > hourStr
-  )
+  return dayBookings.value.some(b => {
+    const normalize = (t: string) => t.split(':')[0].padStart(2, '0')
+    return normalize(b.startTime) <= hourStr && normalize(b.endTime) > hourStr
+  })
 }
 
 const isFirstHourOfBooking = (hour: number) => {
@@ -375,11 +376,12 @@ const isFirstHourOfBooking = (hour: number) => {
   const booking = getBookingForHour(hour)
   if (!booking) return false
   // Check if this is the first hour of the booking
+  const normalize = (t: string) => t.split(':')[0].padStart(2, '0')
   const prevHour = (hour - 1).toString().padStart(2, '0')
   const prevWasBooked = dayBookings.value.some(b => 
-    b.startTime <= prevHour && b.endTime > prevHour && b.id === booking.id
+    normalize(b.startTime) <= prevHour && normalize(b.endTime) > prevHour && b.id === booking.id
   )
-  return !prevWasBooked && booking.startTime === hourStr
+  return !prevWasBooked && normalize(booking.startTime) === hourStr
 }
 
 const getBookingForHour = (hour: number) => {
