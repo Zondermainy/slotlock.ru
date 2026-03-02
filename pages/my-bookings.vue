@@ -214,6 +214,7 @@ onMounted(async () => {
   margin: 0 auto;
   padding: 24px;
   animation: fadeIn 0.4s ease-out;
+  min-height: calc(100vh - 200px);
 }
 
 @keyframes fadeIn {

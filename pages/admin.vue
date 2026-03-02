@@ -86,7 +86,7 @@
               </n-gi>
               <n-gi :span="2">
                 <n-form-item :label="t('roomName')">
-                  <n-input v-model:value="newRoom.name" :placeholder="'Коворкинг У окна; Coworking By the window'" :maxlength="80" show-count />
+                  <n-input v-model:value="newRoom.name" placeholder="Коворкинг У окна;Coworking By the window (через ; указать EN)" :maxlength="80" show-count />
                 </n-form-item>
               </n-gi>
               <n-gi>

@@ -49,6 +49,22 @@
       </div>
     </div>
 
+    <div class="amenities-filter">
+      <n-text strong class="selector-label">Удобства:</n-text>
+      <div class="amenities-buttons">
+        <n-button
+          v-for="amenity in availableAmenities"
+          :key="amenity.value"
+          :type="selectedAmenities.includes(amenity.value) ? 'info' : 'default'"
+          :class="{ active: selectedAmenities.includes(amenity.value) }"
+          size="small"
+          @click="toggleAmenity(amenity.value)"
+        >
+          {{ amenity.label }}
+        </n-button>
+      </div>
+    </div>
+
     <div class="section-header" v-if="filteredRooms.length > 0">
       <n-h2 class="section-title">{{ sectionTitle }}</n-h2>
       <div class="section-line"></div>
@@ -185,12 +201,43 @@ const rooms = ref<Room[]>([])
 const bookings = ref<Booking[]>([])
 const buildingsList = ref<Building[]>([])
 const selectedBuilding = ref<string>('all')
+const selectedAmenities = ref<string[]>([])
+
+const availableAmenities = [
+  { label: 'Wi-Fi', value: 'wifi' },
+  { label: 'Розетки', value: 'power' },
+  { label: 'Принтер', value: 'printer' },
+  { label: 'Проектор', value: 'projector' },
+  { label: 'Доска', value: 'whiteboard' },
+  { label: 'Кондиционер', value: 'ac' },
+  { label: 'Тихая зона', value: 'quiet' },
+  { label: 'Еда', value: 'food' }
+]
+
+const toggleAmenity = (amenity: string) => {
+  const index = selectedAmenities.value.indexOf(amenity)
+  if (index > -1) {
+    selectedAmenities.value.splice(index, 1)
+  } else {
+    selectedAmenities.value.push(amenity)
+  }
+}
 
 const filteredRooms = computed(() => {
-  if (selectedBuilding.value === 'all') {
-    return rooms.value
+  let result = rooms.value
+  
+  if (selectedBuilding.value !== 'all') {
+    result = result.filter(r => r.building === selectedBuilding.value)
   }
-  return rooms.value.filter(r => r.building === selectedBuilding.value)
+  
+  if (selectedAmenities.value.length > 0) {
+    result = result.filter(r => {
+      const roomAmenities = Array.isArray(r.amenities) ? r.amenities : []
+      return selectedAmenities.value.every(a => roomAmenities.includes(a))
+    })
+  }
+  
+  return result
 })
 
 const buildings = computed(() => {
@@ -352,7 +399,28 @@ onMounted(async () => {
 }
 
 .building-selector {
+  margin-bottom: 24px;
+}
+
+.amenities-filter {
   margin-bottom: 32px;
+  padding: 16px;
+  background: rgba(30, 136, 229, 0.05);
+  border-radius: 12px;
+}
+
+.amenities-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.amenities-buttons .n-button {
+  transition: all 0.2s ease;
+}
+
+.amenities-buttons .n-button.active {
+  font-weight: 600;
 }
 
 .selector-label {

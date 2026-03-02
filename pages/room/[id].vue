@@ -91,6 +91,10 @@
             <div class="duration-badge">
               {{ t('duration') }}: <strong>{{ formattedDuration }}</strong>
             </div>
+
+            <div class="booking-rules">
+              <span>Правила: макс. 4 часа • макс. 2 брони в день</span>
+            </div>
           </div>
 
           <n-form-item :label="t('bookingTitleLabel')">
@@ -902,6 +906,21 @@ onMounted(async () => {
 
 .duration-badge strong {
   color: #1E88E5;
+}
+
+.booking-rules {
+  text-align: center;
+  margin-top: 12px;
+  padding: 8px;
+  background: #FFF8E1;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #F57C00;
+}
+
+.dark .booking-rules {
+  background: #3d2a1a;
+  color: #FFB74D;
 }
 
 .conflict-warning {
