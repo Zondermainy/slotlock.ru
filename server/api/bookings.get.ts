@@ -5,14 +5,14 @@ export default defineEventHandler(async (event) => {
   
   // Auto-delete old bookings from database
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
+  const localDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
   const currentHour = now.getHours().toString().padStart(2, '0')
   
   await query(
     `DELETE FROM bookings 
      WHERE booking_date < $1 
      OR (booking_date = $1 AND end_time <= $2)`,
-    [today, currentHour]
+    [localDate, currentHour]
   )
   
   let sql = 'SELECT * FROM bookings'
