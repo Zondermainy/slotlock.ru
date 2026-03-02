@@ -139,18 +139,25 @@
         </template>
 
         <div class="timeline-visual">
-          <div class="timeline-rows">
+          <div class="timeline-hours">
             <div
-              v-for="h in displayHours"
-              :key="h"
-              class="timeline-row"
-              :class="{ 'is-busy': isHourBusy(h) }"
+              v-for="hour in displayHours"
+              :key="hour"
+              class="hour-row"
             >
-              <div class="hour-label">{{ h.toString().padStart(2, '0') }}:00</div>
-              <div class="hour-bar">
-                <span v-if="isFirstHourOfBooking(h)" class="busy-label">
-                  {{ getBookingForHour(h)?.title || t('busyTime') }}
-                </span>
+              <div class="hour-label">{{ hour.toString().padStart(2, '0') }}:00</div>
+              <div class="hour-slots">
+                <div
+                  v-for="minute in [0, 10, 20, 30, 40, 50]"
+                  :key="minute"
+                  class="time-slot"
+                  :class="{ 'is-busy': isSlotBusy(hour, minute) }"
+                  :title="getSlotBooking(hour, minute)?.title"
+                >
+                  <span v-if="getSlotBooking(hour, minute) && getSlotBooking(hour, minute)?.startTime === `${hour.toString().padStart(2, '0')}:${minute}`" class="slot-label">
+                    {{ getSlotBooking(hour, minute)?.title?.substring(0, 8) }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -387,6 +394,52 @@ const isFirstHourOfBooking = (hour: number) => {
   return !prevWasBooked && normalize(booking.startTime) === hourStr
 }
 
+const isTimeBusy = (timeStr: string) => {
+  const [h, m] = timeStr.split(':').map(Number)
+  const timeInMinutes = h * 60 + m
+  return bookings.value.some(b => {
+    const [bh, bm] = b.startTime.split(':').map(Number)
+    const [eh, em] = b.endTime.split(':').map(Number)
+    const bookStart = bh * 60 + bm
+    const bookEnd = eh * 60 + em
+    return timeInMinutes >= bookStart && timeInMinutes < bookEnd
+  })
+}
+
+const getBookingForTime = (timeStr: string) => {
+  const [h, m] = timeStr.split(':').map(Number)
+  const timeInMinutes = h * 60 + m
+  return bookings.value.find(b => {
+    const [bh, bm] = b.startTime.split(':').map(Number)
+    const [eh, em] = b.endTime.split(':').map(Number)
+    const bookStart = bh * 60 + bm
+    const bookEnd = eh * 60 + em
+    return timeInMinutes >= bookStart && timeInMinutes < bookEnd
+  })
+}
+
+const isSlotBusy = (hour: number, minute: number) => {
+  const timeInMinutes = hour * 60 + minute
+  return bookings.value.some(b => {
+    const [bh, bm] = b.startTime.split(':').map(Number)
+    const [eh, em] = b.endTime.split(':').map(Number)
+    const bookStart = bh * 60 + bm
+    const bookEnd = eh * 60 + em
+    return timeInMinutes >= bookStart && timeInMinutes < bookEnd
+  })
+}
+
+const getSlotBooking = (hour: number, minute: number) => {
+  const timeInMinutes = hour * 60 + minute
+  return bookings.value.find(b => {
+    const [bh, bm] = b.startTime.split(':').map(Number)
+    const [eh, em] = b.endTime.split(':').map(Number)
+    const bookStart = bh * 60 + bm
+    const bookEnd = eh * 60 + em
+    return timeInMinutes >= bookStart && timeInMinutes < bookEnd
+  })
+}
+
 const getBookingForHour = (hour: number) => {
   const hourStr = hour.toString().padStart(2, '0')
   return bookings.value.find(b => 
@@ -461,10 +514,21 @@ const displayHours = computed(() => {
   return Array.from({ length: 17 }, (_, i) => i + 7)
 })
 
+const timeSlots = computed(() => {
+  const slots: string[] = []
+  for (let h = 7; h <= 22; h++) {
+    for (const m of [0, 10, 20, 30, 40, 50]) {
+      slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`)
+    }
+  }
+  slots.push('23:00')
+  return slots
+})
+
 const generateTimeOptions = (startFromZero = false) => {
   const options: { label: string; value: string }[] = []
   for (const hour of displayHours.value) {
-    for (const minute of [0, 30]) {
+    for (const minute of [0, 10, 20, 30, 40, 50]) {
       if (hour === 0 && minute === 0 && !startFromZero) continue
       const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
       options.push({ label: timeStr, value: timeStr })
@@ -719,6 +783,61 @@ onMounted(async () => {
   padding: 8px 0;
 }
 
+.timeline-hours {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hour-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.hour-row .hour-label {
+  width: 45px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #546E7A;
+  flex-shrink: 0;
+}
+
+.hour-slots {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+}
+
+.time-slot {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  background: #E3F2FD;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #546E7A;
+  transition: all 0.2s;
+}
+
+.time-slot.is-busy {
+  background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+}
+
+.time-slot.is-busy .slot-label {
+  color: #C62828;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 0 2px;
+}
+
 .timeline-rows {
   display: flex;
   flex-direction: column;
@@ -878,6 +997,23 @@ onMounted(async () => {
 
 .dark .timeline-row .hour-bar {
   color: #a0a0a0;
+}
+
+.dark .hour-row .hour-label {
+  color: #a0a0a0;
+}
+
+.dark .time-slot {
+  background: #2a2a3e;
+  color: #a0a0a0;
+}
+
+.dark .time-slot.is-busy {
+  background: linear-gradient(135deg, #3d2020 0%, #4a2828 100%);
+}
+
+.dark .time-slot.is-busy .slot-label {
+  color: #ef5350;
 }
 
 .dark .timeline-legend {
