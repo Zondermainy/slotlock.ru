@@ -142,8 +142,8 @@
           <div class="status-card" :class="{ 'is-busy': currentBooking || nextBooking }">
             <div class="status-icon">
               <svg v-if="currentBooking || nextBooking" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="#C62828" stroke-width="2"/>
-                <path d="M12 6V12L16 14" stroke="#C62828" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="12" cy="12" r="10" stroke="#F57C00" stroke-width="2"/>
+                <path d="M12 6V12L16 14" stroke="#F57C00" stroke-width="2" stroke-linecap="round"/>
               </svg>
               <svg v-else viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10" stroke="#43A047" stroke-width="2"/>
@@ -167,41 +167,48 @@
           </div>
         </div>
 
-        <div class="timeline-visual">
-          <div class="timeline-hours">
+        <n-card class="bookings-list-card">
+          <template #header>
+            <div class="card-header-title">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="card-icon">
+                <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 2V6" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 2V6" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3 10H21" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Расписание на сегодня</span>
+            </div>
+          </template>
+
+          <div v-if="sortedBookings.length === 0" class="no-bookings">
+            <svg viewBox="0 0 24 24" fill="none" width="48" height="48">
+              <circle cx="12" cy="12" r="10" stroke="#43A047" stroke-width="2"/>
+              <path d="M9 12L11 14L15 10" stroke="#43A047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>На сегодня бронирований нет</p>
+          </div>
+
+          <div v-else class="bookings-list">
             <div
-              v-for="hour in displayHours"
-              :key="hour"
-              class="hour-row"
+              v-for="(booking, index) in sortedBookings"
+              :key="booking.id"
+              class="booking-item"
+              :class="{ 
+                'is-current': isCurrentBooking(booking),
+                'is-past': isPastBooking(booking)
+              }"
             >
-              <div class="hour-label">{{ hour.toString().padStart(2, '0') }}:00</div>
-              <div class="hour-slots">
-                <div
-                  v-for="minute in [0, 10, 20, 30, 40, 50]"
-                  :key="minute"
-                  class="time-slot"
-                  :class="{ 'is-busy': isSlotBusy(hour, minute) }"
-                  :title="getSlotBookingInfo(hour, minute) || undefined"
-                >
-                  <span v-if="getSlotBookingInfo(hour, minute)" class="slot-label">
-                    {{ getSlotBookingInfo(hour, minute) }}
-                  </span>
-                </div>
+              <div class="booking-time">
+                <span class="time-range">{{ booking.startTime }} - {{ booking.endTime }}</span>
+                <span v-if="isCurrentBooking(booking)" class="current-badge">Сейчас</span>
+              </div>
+              <div class="booking-info">
+                <span class="booking-title">{{ booking.title || 'Без названия' }}</span>
+                <span class="booking-user">{{ booking.userName }}</span>
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="timeline-legend">
-          <div class="legend-item">
-            <span class="legend-color free"></span>
-            <span>{{ t('freeTime') }}</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-color busy"></span>
-            <span>{{ t('busyTime') }}</span>
-          </div>
-        </div>
+        </n-card>
       </n-card>
     </template>
   </div>
@@ -629,6 +636,29 @@ const nextBooking = computed(() => {
   }) || null
 })
 
+const sortedBookings = computed(() => {
+  return [...bookings.value].sort((a, b) => {
+    const [ash, asm] = a.startTime.split(':').map(Number)
+    const [bsh, bsm] = b.startTime.split(':').map(Number)
+    return (ash * 60 + asm) - (bsh * 60 + bsm)
+  })
+})
+
+const isCurrentBooking = (booking: Booking) => {
+  const now = new Date()
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+  const [sh, sm] = booking.startTime.split(':').map(Number)
+  const [eh, em] = booking.endTime.split(':').map(Number)
+  return currentMinutes >= sh * 60 + sm && currentMinutes < eh * 60 + em
+}
+
+const isPastBooking = (booking: Booking) => {
+  const now = new Date()
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+  const [eh, em] = booking.endTime.split(':').map(Number)
+  return currentMinutes >= eh * 60 + em
+}
+
 const displayHours = computed(() => {
   return Array.from({ length: 17 }, (_, i) => i + 7)
 })
@@ -913,7 +943,15 @@ onMounted(async () => {
 }
 
 .status-card.is-busy {
-  background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+}
+
+.status-card.is-busy .status-label {
+  color: #F57C00;
+}
+
+.status-card.is-busy .status-time {
+  color: #E65100;
 }
 
 .status-icon {
@@ -957,7 +995,7 @@ onMounted(async () => {
 }
 
 .dark .status-card.is-busy {
-  background: linear-gradient(135deg, #3d2020 0%, #4a2828 100%);
+  background: linear-gradient(135deg, #3d2a1a 0%, #4a3520 100%);
 }
 
 .dark .status-label {
@@ -965,7 +1003,7 @@ onMounted(async () => {
 }
 
 .dark .status-card.is-busy .status-label {
-  color: #ef5350;
+  color: #FFB74D;
 }
 
 .dark .status-time {
@@ -973,7 +1011,141 @@ onMounted(async () => {
 }
 
 .dark .status-card.is-busy .status-time {
-  color: #ef5350;
+  color: #FF9800;
+}
+
+.bookings-list-card {
+  margin-top: 24px;
+  border-radius: 16px !important;
+}
+
+.no-bookings {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px;
+  color: #43A047;
+}
+
+.no-bookings p {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.booking-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #F5F5F5;
+  border-radius: 12px;
+  border-left: 4px solid #43A047;
+}
+
+.booking-item.is-current {
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+  border-left-color: #F57C00;
+}
+
+.booking-item.is-past {
+  opacity: 0.6;
+  border-left-color: #9E9E9E;
+}
+
+.booking-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 100px;
+}
+
+.time-range {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2E7D32;
+}
+
+.booking-item.is-current .time-range {
+  color: #E65100;
+}
+
+.booking-item.is-past .time-range {
+  color: #757575;
+}
+
+.current-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  background: #F57C00;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.booking-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.booking-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #37474F;
+}
+
+.booking-item.is-current .booking-title {
+  color: #E65100;
+}
+
+.booking-user {
+  font-size: 13px;
+  color: #78909C;
+}
+
+.dark .booking-item {
+  background: #2a2a3e;
+}
+
+.dark .booking-item.is-current {
+  background: linear-gradient(135deg, #3d2a1a 0%, #4a3520 100%);
+}
+
+.dark .booking-item.is-past {
+  background: #252525;
+}
+
+.dark .time-range {
+  color: #81C784;
+}
+
+.dark .booking-item.is-current .time-range {
+  color: #FFB74D;
+}
+
+.dark .booking-item.is-past .time-range {
+  color: #9E9E9E;
+}
+
+.dark .booking-title {
+  color: #e0e0e0;
+}
+
+.dark .booking-item.is-current .booking-title {
+  color: #FFB74D;
+}
+
+.dark .booking-user {
+  color: #a0a0a0;
 }
 
 .timeline-visual {
