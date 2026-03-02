@@ -264,16 +264,22 @@ body {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 5px;
 }
 
 .header-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   margin-right: 16px;
   padding-right: 16px;
   border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.desktop-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .theme-btn, .lang-btn {
