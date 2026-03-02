@@ -8,6 +8,8 @@ export const useI18n = () => {
       adminPanel: 'Админка',
       logout: 'Выйти',
       login: 'Войти',
+      myBookings: 'Мои Брони',
+      bookRoom: 'Забронировать',
       
       // Index page
       bookingTitle: 'Бронирование коворкингов ДВФУ',
@@ -156,6 +158,8 @@ export const useI18n = () => {
       adminPanel: 'Admin',
       logout: 'Logout',
       login: 'Login',
+      myBookings: 'My Bookings',
+      bookRoom: 'Book Room',
       
       // Index page
       bookingTitle: 'FEFU Coworking Booking',

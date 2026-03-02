@@ -41,6 +41,9 @@
                   <template v-if="auth.isLoggedIn">
                     <n-text class="user-name">{{ auth.userName }}</n-text>
                     <n-tag v-if="auth.isAdmin" type="warning" size="small">{{ t('admin') }}</n-tag>
+                    <NuxtLink to="/my-bookings">
+                      <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
+                    </NuxtLink>
                     <NuxtLink v-if="auth.isAdmin" to="/admin">
                       <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
                     </NuxtLink>
