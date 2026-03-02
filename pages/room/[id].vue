@@ -28,8 +28,8 @@
             </n-h1>
             <n-text depth="2" class="room-meta">
               {{ room.location }} • {{ t('capacity') }} {{ room.capacity }} {{ t('people') }}
-              <n-tag v-if="['meeting', 'conference', 'lab'].includes(room.type)" size="small" type="info" style="margin-left: 8px">{{ t('roundTheClock') }}</n-tag>
-              <n-tag v-else size="small" type="default" style="margin-left: 8px">{{ t('workingHours') }}</n-tag>
+<n-tag v-if="['meeting', 'conference', 'lab'].includes(room.type)" size="small" type="info" style="margin-left: 8px">07:00 - 23:00</n-tag>
+              <n-tag v-else size="small" type="default" style="margin-left: 8px">07:00 - 23:00</n-tag>
             </n-text>
           </div>
         </div>
@@ -269,7 +269,7 @@ const onDateChange = () => {
   const now = new Date()
   const todayStr = formatDateString(now.getTime())
   const currentHour = now.getHours() + 1
-  const minHour = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 0 : 9
+  const minHour = 7
   
   if (selectedDateLocal.value.dateStr === todayStr) {
     const defaultStart = Math.max(currentHour, minHour)
@@ -324,7 +324,7 @@ const createBooking = async () => {
     const currentHour = now.getHours()
     const currentMinute = now.getMinutes()
     const roundedMinute = Math.ceil(currentMinute / 10) * 10
-    const minHour = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 0 : 9
+    const minHour = 7
     
     let nextHour = currentHour
     let nextMinute = roundedMinute
@@ -458,16 +458,13 @@ const formattedDuration = computed(() => {
 })
 
 const displayHours = computed(() => {
-  if (['meeting', 'conference', 'lab'].includes(room.value?.type)) {
-    return Array.from({ length: 24 }, (_, i) => i)
-  }
-  return Array.from({ length: 13 }, (_, i) => i + 9)
+  return Array.from({ length: 17 }, (_, i) => i + 7)
 })
 
 const generateTimeOptions = (startFromZero = false) => {
   const options: { label: string; value: string }[] = []
   for (const hour of displayHours.value) {
-    for (const minute of [0, 10, 20, 30, 40, 50]) {
+    for (const minute of [0, 30]) {
       if (hour === 0 && minute === 0 && !startFromZero) continue
       const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
       options.push({ label: timeStr, value: timeStr })
@@ -496,8 +493,7 @@ const endTimeOptions = computed(() => {
   const startParts = startHour.value.split(':').map(Number)
   const startHourNum = startParts[0]
   const startMinute = startParts[1]
-  const maxHours = ['meeting', 'conference', 'lab'].includes(room.value?.type) ? 24 : 4
-  const maxEnd = Math.min(startHourNum + maxHours, displayHours.value[displayHours.value.length - 1] + 1)
+  const maxEnd = 23
   
   const now = new Date()
   const todayStr = formatDateString(now.getTime())
@@ -526,7 +522,7 @@ onMounted(async () => {
   // Set default hours to next available slot
   const now = new Date()
   const currentHour = now.getHours()
-  const minHour = room.value.type === 'meeting' ? 0 : 9
+  const minHour = 7
   const defaultStart = Math.max(currentHour + 1, minHour)
   
   startHour.value = `${defaultStart.toString().padStart(2, '0')}:00`
