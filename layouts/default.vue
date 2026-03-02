@@ -255,6 +255,31 @@ body {
   gap: 16px;
 }
 
+@media (max-width: 768px) {
+  .header-actions {
+    gap: 8px;
+  }
+  
+  .header-controls {
+    gap: 4px;
+    margin-right: 8px;
+    padding-right: 8px;
+  }
+  
+  .header-btn, .login-btn {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+  
+  .user-name {
+    display: none;
+  }
+  
+  .n-tag {
+    display: none;
+  }
+}
+
 .header-controls {
   display: flex;
   align-items: center;

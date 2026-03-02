@@ -407,14 +407,13 @@ const generatedId = computed(() => {
 })
 
 const bookingColumns = [
-  { title: 'ID', key: 'id', width: 140 },
-  { title: 'Комната', key: 'roomId', width: 100 },
-  { title: 'Пользователь', key: 'userName' },
-  { title: 'Название', key: 'title', ellipsis: { tooltip: true } },
-  { title: 'Дата', key: 'date', width: 120 },
-  { title: 'Время', key: 'startTime', width: 120, render: (row: Booking) => `${row.startTime}:00 - ${row.endTime}:00` },
-  { title: 'Статус', key: 'status', width: 120, render: (row: Booking) => h(NTag, { type: row.status === 'confirmed' ? 'success' : 'warning', size: 'small' }, () => row.status) },
-  { title: '', key: 'actions', width: 100, render: (row: Booking) => h(NButton, { size: 'small', type: 'error', onClick: () => deleteBooking(row.id) }, () => 'Удалить') }
+  { title: 'Комната', key: 'roomId', width: 80 },
+  { title: 'Пользователь', key: 'userName', width: 120 },
+  { title: 'Название', key: 'title', ellipsis: { tooltip: true }, width: 100 },
+  { title: 'Дата', key: 'date', width: 90 },
+  { title: 'Время', key: 'startTime', width: 100, render: (row: Booking) => `${row.startTime} - ${row.endTime}` },
+  { title: 'Статус', key: 'status', width: 90, render: (row: Booking) => h(NTag, { type: row.status === 'confirmed' ? 'success' : 'warning', size: 'small' }, () => row.status) },
+  { title: '', key: 'actions', width: 70, render: (row: Booking) => h(NButton, { size: 'tiny', type: 'error', onClick: () => deleteBooking(row.id) }, () => 'X') }
 ]
 
 const roomColumns = [
@@ -666,6 +665,23 @@ onMounted(async () => {
 
 .bookings-table :deep(.n-data-table-th) {
   background: #FAFDFF !important;
+}
+
+.bookings-table {
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  .bookings-table :deep(.n-data-table-td) {
+    white-space: nowrap;
+    min-width: 100px;
+  }
+  
+  .bookings-table :deep(.n-data-table-th),
+  .bookings-table :deep(.n-data-table-td) {
+    padding: 8px !important;
+    font-size: 12px;
+  }
 }
 
 .rooms-table :deep(.n-data-table-th) {
