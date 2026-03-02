@@ -526,7 +526,7 @@ onMounted(async () => {
 .room-info {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .room-location,
