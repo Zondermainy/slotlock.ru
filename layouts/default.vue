@@ -131,8 +131,6 @@ const updateBodyClass = () => {
 
 watch(isDark, updateBodyClass, { immediate: true })
 
-const isDark = ref(false)
-
 const toggleTheme = () => {
   isDark.value = !isDark.value
   updateBodyClass()
