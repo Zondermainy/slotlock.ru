@@ -156,7 +156,7 @@
                 <span class="status-time">с {{ currentBooking.startTime }} до {{ currentBooking.endTime }}</span>
               </template>
               <template v-else-if="nextBooking">
-                <span class="status-label">Ближайшая бронь в {{ nextBooking.startTime }}</span>
+                <span class="status-label">Ближайшая бронь с {{ nextBooking.startTime }} до {{ nextBooking.endTime }}</span>
                 <span class="status-time">{{ nextBooking.title }}</span>
               </template>
               <template v-else>
