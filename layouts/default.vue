@@ -21,8 +21,8 @@
                     </div>
                   </div>
                 </NuxtLink>
-<div class="header-actions">
-                  <div class="header-controls desktop-only">
+                <div class="header-actions">
+                  <div class="header-controls">
                     <n-button quaternary circle @click="toggleTheme" class="theme-btn">
                       <template #icon>
                         <svg v-if="isDark" viewBox="0 0 24 24" width="20" height="20" fill="none">
@@ -38,7 +38,21 @@
                       {{ isRu ? 'EN' : 'RU' }}
                     </n-button>
                   </div>
-                  
+                  <template v-if="auth.isLoggedIn">
+                    <n-text class="user-name">{{ auth.userName }}</n-text>
+                    <NuxtLink to="/my-bookings">
+                      <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
+                    </NuxtLink>
+                    <NuxtLink v-if="auth.isAdmin" to="/admin">
+                      <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
+                    </NuxtLink>
+                    <n-button quaternary class="header-btn" @click="handleLogout">{{ t('logout') }}</n-button>
+                  </template>
+                  <template v-else>
+                    <NuxtLink to="/login">
+                      <n-button class="login-btn">{{ t('login') }}</n-button>
+                    </NuxtLink>
+                  </template>
                   <n-button quaternary circle class="mobile-menu-btn" @click="showMobileMenu = !showMobileMenu">
                     <template #icon>
                       <svg v-if="!showMobileMenu" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
@@ -52,48 +66,39 @@
                       </svg>
                     </template>
                   </n-button>
-                  
-                  <template v-if="auth.isLoggedIn">
-                    <n-text class="user-name desktop-only">{{ auth.userName }}</n-text>
-                  </template>
-                  <template v-else>
-                    <NuxtLink to="/login" class="desktop-only">
-                      <n-button class="login-btn">{{ t('login') }}</n-button>
-                    </NuxtLink>
-                  </template>
                 </div>
+              </div>
 
-                <div v-if="showMobileMenu" class="mobile-menu">
-                  <n-button quaternary circle @click="toggleTheme" class="theme-btn">
-                    <template #icon>
-                      <svg v-if="isDark" viewBox="0 0 24 24" width="20" height="20" fill="none">
-                        <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
-                        <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                      </svg>
-                      <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </template>
-                  </n-button>
-                  <n-button quaternary @click="toggleLang" class="lang-btn">
-                    {{ isRu ? 'EN' : 'RU' }}
-                  </n-button>
-                  <template v-if="auth.isLoggedIn">
-                    <span class="mobile-user-name">{{ auth.userName }}</span>
-                    <NuxtLink to="/my-bookings" @click="showMobileMenu = false">
-                      <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
-                    </NuxtLink>
-                    <NuxtLink v-if="auth.isAdmin" to="/admin" @click="showMobileMenu = false">
-                      <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
-                    </NuxtLink>
-                    <n-button quaternary class="header-btn" @click="handleLogout(); showMobileMenu = false">{{ t('logout') }}</n-button>
+              <div v-if="showMobileMenu" class="mobile-menu">
+                <n-button quaternary circle @click="toggleTheme" class="theme-btn">
+                  <template #icon>
+                    <svg v-if="isDark" viewBox="0 0 24 24" width="20" height="20" fill="none">
+                      <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+                      <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none">
+                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                   </template>
-                  <template v-else>
-                    <NuxtLink to="/login" @click="showMobileMenu = false">
-                      <n-button class="login-btn">{{ t('login') }}</n-button>
-                    </NuxtLink>
-                  </template>
-                </div>
+                </n-button>
+                <n-button quaternary @click="toggleLang" class="lang-btn">
+                  {{ isRu ? 'EN' : 'RU' }}
+                </n-button>
+                <template v-if="auth.isLoggedIn">
+                  <span class="mobile-user-name">{{ auth.userName }}</span>
+                  <NuxtLink to="/my-bookings" @click="showMobileMenu = false">
+                    <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
+                  </NuxtLink>
+                  <NuxtLink v-if="auth.isAdmin" to="/admin" @click="showMobileMenu = false">
+                    <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
+                  </NuxtLink>
+                  <n-button quaternary class="header-btn" @click="handleLogout(); showMobileMenu = false">{{ t('logout') }}</n-button>
+                </template>
+                <template v-else>
+                  <NuxtLink to="/login" @click="showMobileMenu = false">
+                    <n-button class="login-btn">{{ t('login') }}</n-button>
+                  </NuxtLink>
+                </template>
               </div>
             </n-layout-header>
             <n-layout-content class="main-content">
