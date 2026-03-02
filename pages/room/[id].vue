@@ -138,6 +138,35 @@
           </div>
         </template>
 
+        <div class="timeline-status">
+          <div class="status-card" :class="{ 'is-busy': currentBooking || nextBooking }">
+            <div class="status-icon">
+              <svg v-if="currentBooking || nextBooking" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#C62828" stroke-width="2"/>
+                <path d="M12 6V12L16 14" stroke="#C62828" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#43A047" stroke-width="2"/>
+                <path d="M9 12L11 14L15 10" stroke="#43A047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="status-text">
+              <template v-if="currentBooking">
+                <span class="status-label">{{ room?.name || 'Комната' }} занята</span>
+                <span class="status-time">с {{ currentBooking.startTime }} до {{ currentBooking.endTime }}</span>
+              </template>
+              <template v-else-if="nextBooking">
+                <span class="status-label">Ближайшая бронь в {{ nextBooking.startTime }}</span>
+                <span class="status-time">{{ nextBooking.title }}</span>
+              </template>
+              <template v-else>
+                <span class="status-label">{{ room?.name || 'Комната' }} свободна</span>
+                <span class="status-time">Можно забронировать</span>
+              </template>
+            </div>
+          </div>
+        </div>
+
         <div class="timeline-visual">
           <div class="timeline-hours">
             <div
@@ -152,7 +181,7 @@
                   :key="minute"
                   class="time-slot"
                   :class="{ 'is-busy': isSlotBusy(hour, minute) }"
-                  :title="getSlotBookingInfo(hour, minute)"
+                  :title="getSlotBookingInfo(hour, minute) || undefined"
                 >
                   <span v-if="getSlotBookingInfo(hour, minute)" class="slot-label">
                     {{ getSlotBookingInfo(hour, minute) }}
@@ -576,6 +605,30 @@ const formattedDuration = computed(() => {
   }
 })
 
+const currentBooking = computed(() => {
+  const now = new Date()
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+  return bookings.value.find(b => {
+    const [sh, sm] = b.startTime.split(':').map(Number)
+    const [eh, em] = b.endTime.split(':').map(Number)
+    return currentMinutes >= sh * 60 + sm && currentMinutes < eh * 60 + em
+  }) || null
+})
+
+const nextBooking = computed(() => {
+  const now = new Date()
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+  const sorted = [...bookings.value].sort((a, b) => {
+    const [ash, asm] = a.startTime.split(':').map(Number)
+    const [bsh, bsm] = b.startTime.split(':').map(Number)
+    return (ash * 60 + asm) - (bsh * 60 + bsm)
+  })
+  return sorted.find(b => {
+    const [sh, sm] = b.startTime.split(':').map(Number)
+    return sh * 60 + sm > currentMinutes
+  }) || null
+})
+
 const displayHours = computed(() => {
   return Array.from({ length: 17 }, (_, i) => i + 7)
 })
@@ -843,6 +896,84 @@ onMounted(async () => {
 
 .submit-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #1565C0 0%, #1E88E5 100%) !important;
+}
+
+.timeline-status {
+  margin-bottom: 20px;
+}
+
+.status-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.status-card.is-busy {
+  background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+}
+
+.status-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.status-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-label {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2E7D32;
+}
+
+.status-card.is-busy .status-label {
+  color: #C62828;
+}
+
+.status-time {
+  font-size: 14px;
+  color: #546E7A;
+}
+
+.status-card.is-busy .status-time {
+  color: #C62828;
+}
+
+.dark .status-card {
+  background: linear-gradient(135deg, #1b3320 0%, #1e2e22 100%);
+}
+
+.dark .status-card.is-busy {
+  background: linear-gradient(135deg, #3d2020 0%, #4a2828 100%);
+}
+
+.dark .status-label {
+  color: #81C784;
+}
+
+.dark .status-card.is-busy .status-label {
+  color: #ef5350;
+}
+
+.dark .status-time {
+  color: #a0a0a0;
+}
+
+.dark .status-card.is-busy .status-time {
+  color: #ef5350;
 }
 
 .timeline-visual {
