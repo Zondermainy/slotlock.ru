@@ -17,7 +17,7 @@
                     </div>
                     <div class="logo-text">
                       <span class="logo-dvfu">slotlock</span>
-                      <span class="logo-slotlock">{{ isRu ? 'ДВФУ' : 'FEFU' }}</span>
+                      <span class="logo-slotlock">{{ isRu ? 'слотлок' : 'FEFU' }}</span>
                     </div>
                   </div>
                 </NuxtLink>
@@ -74,8 +74,8 @@
             <footer class="footer">
               <div class="footer-content">
                 <div class="footer-project">
-                  <span class="footer-name">Slotlock</span>
-                  <span class="footer-dvfu">{{ isRu ? 'ДВФУ' : 'FEFU' }}</span>
+                  <span class="footer-name">slotlock</span>
+                  <span class="footer-dvfu">{{ isRu ? 'слотлок' : 'slotlock' }}</span>
                 </div>
                 <div class="footer-group">Б9122-09.03.02прс</div>
                 <div class="footer-edu">{{ isRu ? 'Учебный проект' : 'Educational project' }}</div>
@@ -105,12 +105,12 @@ const auth = useAuthStore()
 const { isRu, t, toggleLang, initLang } = useI18n()
 
 useHead({
-  title: computed(() => isRu.value ? 'ДВФУ Slotlock' : 'FEFU Slotlock')
+  title: computed(() => isRu.value ? 'слотлок' : 'slotlock')
 })
 
 watch(isRu, (newVal) => {
   if (import.meta.client) {
-    document.title = newVal ? 'ДВФУ Slotlock' : 'FEFU Slotlock'
+    document.title = newVal ? 'слотлок' : 'slotlock'
   }
 }, { immediate: true })
 
@@ -379,6 +379,7 @@ body {
   font-size: 18px;
   font-weight: 700;
   color: white;
+  text-transform: lowercase;
 }
 
 .footer-dvfu {
