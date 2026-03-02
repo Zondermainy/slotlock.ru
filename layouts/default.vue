@@ -21,8 +21,8 @@
                     </div>
                   </div>
                 </NuxtLink>
-                <div class="header-actions">
-                  <div class="header-controls">
+<div class="header-actions">
+                  <div class="header-controls desktop-only">
                     <n-button quaternary circle @click="toggleTheme" class="theme-btn">
                       <template #icon>
                         <svg v-if="isDark" viewBox="0 0 24 24" width="20" height="20" fill="none">
@@ -38,19 +38,66 @@
                       {{ isRu ? 'EN' : 'RU' }}
                     </n-button>
                   </div>
+                  
+                  <n-button quaternary circle class="mobile-menu-btn" @click="showMobileMenu = !showMobileMenu">
+                    <template #icon>
+                      <svg v-if="!showMobileMenu" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                      </svg>
+                      <svg v-else viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </template>
+                  </n-button>
+                  
                   <template v-if="auth.isLoggedIn">
-                    <n-text class="user-name">{{ auth.userName }}</n-text>
-                    <n-tag v-if="auth.isAdmin" type="warning" size="small">{{ t('admin') }}</n-tag>
-                    <NuxtLink to="/my-bookings">
+                    <n-text class="user-name desktop-only">{{ auth.userName }}</n-text>
+                    <n-tag v-if="auth.isAdmin" type="warning" size="small" class="desktop-only">{{ t('admin') }}</n-tag>
+                    <NuxtLink to="/my-bookings" class="mobile-menu-link">
                       <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
                     </NuxtLink>
-                    <NuxtLink v-if="auth.isAdmin" to="/admin">
+                    <NuxtLink v-if="auth.isAdmin" to="/admin" class="mobile-menu-link">
                       <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
                     </NuxtLink>
-                    <n-button quaternary class="header-btn" @click="handleLogout">{{ t('logout') }}</n-button>
+                    <n-button quaternary class="header-btn mobile-menu-link" @click="handleLogout">{{ t('logout') }}</n-button>
                   </template>
                   <template v-else>
-                    <NuxtLink to="/login">
+                    <NuxtLink to="/login" class="mobile-menu-link">
+                      <n-button class="login-btn">{{ t('login') }}</n-button>
+                    </NuxtLink>
+                  </template>
+                </div>
+
+                <div v-if="showMobileMenu" class="mobile-menu">
+                  <n-button quaternary circle @click="toggleTheme" class="theme-btn">
+                    <template #icon>
+                      <svg v-if="isDark" viewBox="0 0 24 24" width="20" height="20" fill="none">
+                        <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </template>
+                  </n-button>
+                  <n-button quaternary @click="toggleLang" class="lang-btn">
+                    {{ isRu ? 'EN' : 'RU' }}
+                  </n-button>
+                  <template v-if="auth.isLoggedIn">
+                    <span class="mobile-user-name">{{ auth.userName }}</span>
+                    <NuxtLink to="/my-bookings" @click="showMobileMenu = false">
+                      <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
+                    </NuxtLink>
+                    <NuxtLink v-if="auth.isAdmin" to="/admin" @click="showMobileMenu = false">
+                      <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
+                    </NuxtLink>
+                    <n-button quaternary class="header-btn" @click="handleLogout(); showMobileMenu = false">{{ t('logout') }}</n-button>
+                  </template>
+                  <template v-else>
+                    <NuxtLink to="/login" @click="showMobileMenu = false">
                       <n-button class="login-btn">{{ t('login') }}</n-button>
                     </NuxtLink>
                   </template>
@@ -63,7 +110,7 @@
             <footer class="footer">
               <div class="footer-content">
                 <div class="footer-project">
-                  <span class="footer-name">Slotlock</span>
+                  <span class="footer-name">slotlock</span>
                   <span class="footer-dvfu">{{ isRu ? 'ДВФУ' : 'FEFU' }}</span>
                 </div>
                 <div class="footer-group">Б9122-09.03.02прс</div>
@@ -104,6 +151,7 @@ watch(isRu, (newVal) => {
 }, { immediate: true })
 
 const isDark = ref(false)
+const showMobileMenu = ref(false)
 
 const toggleTheme = () => {
   isDark.value = !isDark.value
@@ -278,6 +326,66 @@ body {
   .n-tag {
     display: none;
   }
+  
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+  
+  .mobile-menu-link {
+    display: block;
+    width: 100%;
+  }
+}
+
+.mobile-menu-btn {
+  display: none;
+}
+
+.mobile-menu {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #1565C0 0%, #1E88E5 100%);
+    padding: 16px;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  .mobile-user-name {
+    color: white;
+    font-weight: 500;
+    padding: 8px 0;
+  }
+  
+  .mobile-menu .header-btn,
+  .mobile-menu .login-btn {
+    width: 100%;
+    justify-content: flex-start;
+    color: white !important;
+    background: rgba(255,255,255,0.15) !important;
+  }
+  
+  .mobile-menu .lang-btn {
+    color: white !important;
+    justify-content: flex-start;
+  }
+  
+  .mobile-menu a {
+    text-decoration: none;
+  }
 }
 
 .header-controls {
@@ -307,6 +415,14 @@ body {
   color: white !important;
   background: rgba(255, 255, 255, 0.2) !important;
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.desktop-only {
+  display: block;
+}
+
+.mobile-menu-btn {
+  display: none;
 }
 
 .user-name {
