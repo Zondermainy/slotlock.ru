@@ -12,6 +12,14 @@ export default defineEventHandler(async (event) => {
   const [endH, endM] = endTime.split(':').map(Number)
   const durationHours = (endH * 60 + endM - (startH * 60 + startM)) / 60
   
+  if (startH < 7 || startH >= 23) {
+    throw createError({ statusCode: 400, message: 'Бронирование возможно с 7:00 до 23:00' })
+  }
+  
+  if (endH > 23 || (endH === 23 && endM > 0)) {
+    throw createError({ statusCode: 400, message: 'Бронирование возможно с 7:00 до 23:00' })
+  }
+  
   if (durationHours > 4) {
     throw createError({ statusCode: 400, message: 'Максимальная длительность брони - 4 часа' })
   }

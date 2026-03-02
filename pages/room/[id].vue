@@ -698,8 +698,9 @@ const startTimeOptions = computed(() => {
   
   return generateTimeOptions()
     .filter(t => {
-      if (selectedDateLocal.value.dateStr > todayStr) return true
       const [h, m] = t.value.split(':').map(Number)
+      if (h < 7 || h >= 23) return false
+      if (selectedDateLocal.value.dateStr > todayStr) return true
       if (h > currentHour) return true
       if (h === currentHour && m > currentMinute) return false
       return true
@@ -722,6 +723,7 @@ const endTimeOptions = computed(() => {
       if (h < startHourNum) return false
       if (h === startHourNum && m <= startMinute) return false
       if (h > maxEnd) return false
+      if (startHourNum >= 23) return false
       if (selectedDateLocal.value.dateStr === todayStr && h <= currentHour) return false
       return true
     })
