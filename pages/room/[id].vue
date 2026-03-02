@@ -152,10 +152,10 @@
                   :key="minute"
                   class="time-slot"
                   :class="{ 'is-busy': isSlotBusy(hour, minute) }"
-                  :title="getSlotBooking(hour, minute)?.title"
+                  :title="getSlotBookingInfo(hour, minute)"
                 >
-                  <span v-if="getSlotBooking(hour, minute) && getSlotBooking(hour, minute)?.startTime === `${hour.toString().padStart(2, '0')}:${minute}`" class="slot-label">
-                    {{ getSlotBooking(hour, minute)?.title?.substring(0, 8) }}
+                  <span v-if="getSlotBookingInfo(hour, minute)" class="slot-label">
+                    {{ getSlotBookingInfo(hour, minute) }}
                   </span>
                 </div>
               </div>
@@ -438,6 +438,36 @@ const getSlotBooking = (hour: number, minute: number) => {
     const bookEnd = eh * 60 + em
     return timeInMinutes >= bookStart && timeInMinutes < bookEnd
   })
+}
+
+const getSlotBookingInfo = (hour: number, minute: number): string | null => {
+  const timeInMinutes = hour * 60 + minute
+  const booking = bookings.value.find(b => {
+    const [bh, bm] = b.startTime.split(':').map(Number)
+    const [eh, em] = b.endTime.split(':').map(Number)
+    const bookStart = bh * 60 + bm
+    const bookEnd = eh * 60 + em
+    return timeInMinutes >= bookStart && timeInMinutes < bookEnd
+  })
+  
+  if (!booking) return null
+  
+  const [bh, bm] = booking.startTime.split(':').map(Number)
+  const [eh, em] = booking.endTime.split(':').map(Number)
+  const bookStart = bh * 60 + bm
+  const bookEnd = eh * 60 + em
+  
+  // First slot of booking - show start time
+  if (timeInMinutes === bookStart) {
+    return booking.startTime
+  }
+  
+  // Last slot of booking - show end time
+  if (timeInMinutes === bookEnd - 10) {
+    return booking.endTime
+  }
+  
+  return null
 }
 
 const getBookingForHour = (hour: number) => {
@@ -830,12 +860,13 @@ onMounted(async () => {
 
 .time-slot.is-busy .slot-label {
   color: #C62828;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
   padding: 0 2px;
+  font-size: 10px;
 }
 
 .timeline-rows {
@@ -1014,6 +1045,8 @@ onMounted(async () => {
 
 .dark .time-slot.is-busy .slot-label {
   color: #ef5350;
+  font-weight: 600;
+  font-size: 10px;
 }
 
 .dark .timeline-legend {
