@@ -227,38 +227,58 @@ const parseAmenities = (amenitiesStr: string | string[]) => {
 
 const getCurrentBooking = (roomId: string) => {
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
-  const currentHour = now.getHours().toString().padStart(2, '0')
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+  const today = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
   
-  return bookings.value.find(b => 
-    b.roomId === roomId && 
-    b.date === today &&
-    b.startTime <= currentHour &&
-    b.endTime > currentHour
-  )
+  return bookings.value.find(b => {
+    if (b.roomId !== roomId || b.date !== today) return false
+    const [sh, sm] = b.startTime.split(':').map(Number)
+    const [eh, em] = b.endTime.split(':').map(Number)
+    return currentMinutes >= sh * 60 + sm && currentMinutes < eh * 60 + em
+  })
 }
 
 const getRoomStatus = (roomId: string) => {
   const now = new Date()
   const currentHour = now.getHours()
-  const currentBooking = getCurrentBooking(roomId)
+  const currentMinute = now.getMinutes()
+  const currentMinutes = currentHour * 60 + currentMinute
+  
+  const today = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
+  
+  const roomBookings = bookings.value.filter(b => b.roomId === roomId && b.date === today)
+  
+  const currentBooking = roomBookings.find(b => {
+    const [sh, sm] = b.startTime.split(':').map(Number)
+    const [eh, em] = b.endTime.split(':').map(Number)
+    const startMins = sh * 60 + sm
+    const endMins = eh * 60 + em
+    return currentMinutes >= startMins && currentMinutes < endMins
+  })
   
   if (currentBooking) {
     return {
-      text: `${t('busy')} ${currentBooking.startTime}:00 - ${currentBooking.endTime}:00`,
+      text: `${t('busy')} ${currentBooking.startTime} - ${currentBooking.endTime}`,
       class: 'status-busy',
       nextBooking: null
     }
   }
   
-  const nextBooking = bookings.value
-    .filter(b => b.roomId === roomId && b.date === now.toISOString().split('T')[0] && parseInt(b.startTime) > currentHour)
-    .sort((a, b) => parseInt(a.startTime) - parseInt(b.startTime))[0]
+  const nextBooking = roomBookings
+    .filter(b => {
+      const [sh, sm] = b.startTime.split(':').map(Number)
+      return sh * 60 + sm > currentMinutes
+    })
+    .sort((a, b) => {
+      const [ash, asm] = a.startTime.split(':').map(Number)
+      const [bsh, bsm] = b.startTime.split(':').map(Number)
+      return (ash * 60 + asm) - (bsh * 60 + bsm)
+    })[0]
   
   return {
     text: t('freeNow'),
     class: 'status-free',
-    nextBooking: nextBooking ? `${t('nextBooking')}: ${nextBooking.startTime}:00 - ${nextBooking.endTime}:00` : null
+    nextBooking: nextBooking ? `${t('nextBooking')}: ${nextBooking.startTime} - ${nextBooking.endTime}` : null
   }
 }
 
