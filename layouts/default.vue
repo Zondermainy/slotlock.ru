@@ -55,17 +55,9 @@
                   
                   <template v-if="auth.isLoggedIn">
                     <n-text class="user-name desktop-only">{{ auth.userName }}</n-text>
-                    <n-tag v-if="auth.isAdmin" type="warning" size="small" class="desktop-only">{{ t('admin') }}</n-tag>
-                    <NuxtLink to="/my-bookings" class="mobile-menu-link">
-                      <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
-                    </NuxtLink>
-                    <NuxtLink v-if="auth.isAdmin" to="/admin" class="mobile-menu-link">
-                      <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
-                    </NuxtLink>
-                    <n-button quaternary class="header-btn mobile-menu-link" @click="handleLogout">{{ t('logout') }}</n-button>
                   </template>
                   <template v-else>
-                    <NuxtLink to="/login" class="mobile-menu-link">
+                    <NuxtLink to="/login" class="desktop-only">
                       <n-button class="login-btn">{{ t('login') }}</n-button>
                     </NuxtLink>
                   </template>
