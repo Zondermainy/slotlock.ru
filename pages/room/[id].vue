@@ -442,6 +442,8 @@ const getSlotBooking = (hour: number, minute: number) => {
 
 const getSlotBookingInfo = (hour: number, minute: number): string | null => {
   const timeInMinutes = hour * 60 + minute
+  
+  // Find if this slot is part of a booking
   const booking = bookings.value.find(b => {
     const [bh, bm] = b.startTime.split(':').map(Number)
     const [eh, em] = b.endTime.split(':').map(Number)
@@ -450,21 +452,55 @@ const getSlotBookingInfo = (hour: number, minute: number): string | null => {
     return timeInMinutes >= bookStart && timeInMinutes < bookEnd
   })
   
-  if (!booking) return null
-  
-  const [bh, bm] = booking.startTime.split(':').map(Number)
-  const [eh, em] = booking.endTime.split(':').map(Number)
-  const bookStart = bh * 60 + bm
-  const bookEnd = eh * 60 + em
-  
-  // First slot of booking - show start time
-  if (timeInMinutes === bookStart) {
-    return booking.startTime
+  if (booking) {
+    const [bh, bm] = booking.startTime.split(':').map(Number)
+    const [eh, em] = booking.endTime.split(':').map(Number)
+    const bookStart = bh * 60 + bm
+    const bookEnd = eh * 60 + em
+    
+    // First slot of booking - show start time
+    if (timeInMinutes === bookStart) {
+      return booking.startTime
+    }
+    
+    // Last slot of booking - show end time
+    if (timeInMinutes === bookEnd - 10) {
+      return booking.endTime
+    }
+    
+    // Middle of booking - no label
+    return null
   }
   
-  // Last slot of booking - show end time
-  if (timeInMinutes === bookEnd - 10) {
-    return booking.endTime
+  // For free slots, show time if it's near a booking
+  const nextBooking = bookings.value.find(b => {
+    const [bh, bm] = b.startTime.split(':').map(Number)
+    const bookStart = bh * 60 + bm
+    return bookStart > timeInMinutes && bookStart - timeInMinutes <= 20
+  })
+  
+  if (nextBooking) {
+    const [bh, bm] = nextBooking.startTime.split(':').map(Number)
+    const bookStart = bh * 60 + bm
+    const diff = bookStart - timeInMinutes
+    if (diff > 0 && diff <= 20) {
+      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+    }
+  }
+  
+  const prevBooking = bookings.value.find(b => {
+    const [eh, em] = b.endTime.split(':').map(Number)
+    const bookEnd = eh * 60 + em
+    return bookEnd < timeInMinutes && timeInMinutes - bookEnd <= 40
+  })
+  
+  if (prevBooking) {
+    const [eh, em] = prevBooking.endTime.split(':').map(Number)
+    const bookEnd = eh * 60 + em
+    const diff = timeInMinutes - bookEnd
+    if (diff > 0 && diff <= 40) {
+      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+    }
   }
   
   return null
@@ -858,14 +894,20 @@ onMounted(async () => {
   background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
 }
 
-.time-slot.is-busy .slot-label {
-  color: #C62828;
-  font-weight: 600;
+.time-slot .slot-label {
+  color: #78909C;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
   padding: 0 2px;
+  font-size: 10px;
+}
+
+.time-slot.is-busy .slot-label {
+  color: #C62828;
+  font-weight: 600;
   font-size: 10px;
 }
 
@@ -1041,6 +1083,12 @@ onMounted(async () => {
 
 .dark .time-slot.is-busy {
   background: linear-gradient(135deg, #3d2020 0%, #4a2828 100%);
+}
+
+.dark .time-slot .slot-label {
+  color: #78909C;
+  font-weight: 500;
+  font-size: 10px;
 }
 
 .dark .time-slot.is-busy .slot-label {
