@@ -64,6 +64,7 @@
                   <span class="footer-dvfu">{{ isRu ? 'ДВФУ' : 'FEFU' }}</span>
                 </div>
                 <div class="footer-group">Б9122-09.03.02прс</div>
+                <div class="footer-edu">{{ isRu ? 'Учебный проект' : 'Educational project' }}</div>
                 <div class="footer-links">
                   <a href="https://github.com/Zondermainy/slotlock.ru" target="_blank" class="github-link">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -72,7 +73,6 @@
                     GitHub
                   </a>
                 </div>
-                <div class="footer-edu">{{ isRu ? 'Учебный проект' : 'Educational project' }}</div>
               </div>
             </footer>
           </n-layout>
