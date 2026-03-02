@@ -17,7 +17,7 @@
                     </div>
                     <div class="logo-text">
                       <span class="logo-dvfu">{{ isRu ? 'слотлок' : 'slotlock' }}</span>
-                      <span class="logo-slotlock">{{ isRu ? 'двфу' : 'fevu' }}</span>
+                      <span class="logo-slotlock">{{ isRu ? 'двфу' : 'fefu' }}</span>
                     </div>
                   </div>
                 </NuxtLink>
@@ -75,7 +75,7 @@
               <div class="footer-content">
                 <div class="footer-project">
                   <span class="footer-name">{{ isRu ? 'слотлок' : 'slotlock' }}</span>
-                  <span class="footer-dvfu">{{ isRu ? 'двфу' : 'fevu' }}</span>
+                  <span class="footer-dvfu">{{ isRu ? 'двфу' : 'fefu' }}</span>
                 </div>
                 <div class="footer-group">Б9122-09.03.02прс</div>
                 <div class="footer-edu">{{ isRu ? 'Учебный проект' : 'Educational project' }}</div>
