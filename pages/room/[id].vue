@@ -202,20 +202,23 @@ const roomId = route.params.id as string
 const room = ref<Room | null>(null)
 const bookings = ref<Booking[]>([])
 const selectedDateTs = ref<number>(Date.now())
-const selectedDate = computed(() => {
-  const d = new Date(selectedDateTs.value)
+
+const getLocalDate = (timestamp: number) => {
+  const d = new Date(timestamp)
   const year = d.getFullYear()
   const month = (d.getMonth() + 1).toString().padStart(2, '0')
   const day = d.getDate().toString().padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+const selectedDate = computed(() => {
+  return getLocalDate(selectedDateTs.value)
 })
 
 const selectedDateLocal = computed(() => {
-  const d = new Date(selectedDateTs.value)
-  const year = d.getFullYear()
-  const month = (d.getMonth() + 1).toString().padStart(2, '0')
-  const day = d.getDate().toString().padStart(2, '0')
-  return { year, month, day, dateStr: `${year}-${month}-${day}` }
+  const dateStr = getLocalDate(selectedDateTs.value)
+  const [year, month, day] = dateStr.split('-')
+  return { year, month, day, dateStr }
 })
 
 const onDateChange = () => {
