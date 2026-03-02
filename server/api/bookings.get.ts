@@ -3,16 +3,18 @@ import { query } from '~/server/utils/db'
 export default defineEventHandler(async (event) => {
   const urlQuery = getQuery(event)
   
-  // Auto-delete old bookings from database
   const now = new Date()
-  const localDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
+  const year = now.getFullYear()
+  const month = (now.getMonth() + 1).toString().padStart(2, '0')
+  const day = now.getDate().toString().padStart(2, '0')
+  const today = `${year}-${month}-${day}`
   const currentHour = now.getHours().toString().padStart(2, '0')
   
   await query(
     `DELETE FROM bookings 
      WHERE booking_date < $1 
      OR (booking_date = $1 AND end_time <= $2)`,
-    [localDate, currentHour]
+    [today, currentHour]
   )
   
   let sql = 'SELECT * FROM bookings'

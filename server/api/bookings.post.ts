@@ -3,8 +3,8 @@ import { query } from '~/server/utils/db'
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   
-  // Ensure date is treated as local timezone
-  const bookingDate = body.date
+  const startTime = body.startTime || '00:00'
+  const endTime = body.endTime || '00:00'
   
   const overlapCheck = await query(
     `SELECT id FROM bookings 
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
      AND booking_date = $2
      AND start_time < $3 
      AND end_time > $4`,
-    [body.roomId, bookingDate, body.endTime, body.startTime]
+    [body.roomId, body.date, endTime, startTime]
   )
   
   if (overlapCheck.rows.length > 0) {
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   const result = await query(
     `INSERT INTO bookings (id, room_id, user_id, user_name, title, booking_date, start_time, end_time, status) 
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-    [id, body.roomId, body.userId, body.userName, body.title || 'Без названия', bookingDate, body.startTime, body.endTime, 'confirmed']
+    [id, body.roomId, body.userId, body.userName, body.title || 'Без названия', body.date, startTime, endTime, 'confirmed']
   )
   
   const row = result.rows[0]
