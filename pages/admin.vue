@@ -417,13 +417,13 @@ const bookingColumns = [
 ]
 
 const roomColumns = [
-  { title: 'ID', key: 'id', width: 100 },
-  { title: 'Название', key: 'name', ellipsis: { tooltip: true } },
-  { title: 'Корпус', key: 'building', width: 80, render: (row: Room) => h(NTag, { size: 'small' }, () => row.building) },
-  { title: 'Этаж', key: 'floor', width: 70 },
-  { title: 'Тип', key: 'type', width: 140, render: (row: Room) => h(NTag, { type: row.type === 'meeting' ? 'info' : 'default', size: 'small' }, () => getTypeLabel(row.type)) },
-  { title: 'Вмест.', key: 'capacity', width: 70 },
-  { title: '', key: 'actions', width: 100, render: (row: Room) => h(NButton, { size: 'small', type: 'error', onClick: () => deleteRoom(row.id) }, () => 'Удалить') }
+  { title: 'ID', key: 'id', width: 70 },
+  { title: 'Название', key: 'name', ellipsis: { tooltip: true }, width: 120 },
+  { title: 'Корп.', key: 'building', width: 55, render: (row: Room) => h(NTag, { size: 'small' }, () => row.building) },
+  { title: 'Эт.', key: 'floor', width: 45 },
+  { title: 'Тип', key: 'type', width: 90, render: (row: Room) => h(NTag, { type: row.type === 'meeting' ? 'info' : 'default', size: 'small' }, () => getTypeLabel(row.type)) },
+  { title: 'Мес.', key: 'capacity', width: 50 },
+  { title: '', key: 'actions', width: 70, render: (row: Room) => h(NButton, { size: 'tiny', type: 'error', onClick: () => deleteRoom(row.id) }, () => 'X') }
 ]
 
 const buildingColumns = [
@@ -681,6 +681,14 @@ onMounted(async () => {
   .bookings-table :deep(.n-data-table-td) {
     padding: 8px !important;
     font-size: 12px;
+  }
+
+  .rooms-table {
+    overflow-x: auto;
+  }
+
+  .rooms-table :deep(.n-data-table-wrapper) {
+    min-width: 600px;
   }
 }
 
