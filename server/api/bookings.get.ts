@@ -27,8 +27,9 @@ export default defineEventHandler(async (event) => {
   }
   
   if (urlQuery.date) {
-    conditions.push(`booking_date = $${params.length + 1}`)
-    params.push(urlQuery.date)
+    const dateParam = String(urlQuery.date).split('T')[0]
+    conditions.push(`DATE(booking_date) = $${params.length + 1}`)
+    params.push(dateParam)
   }
   
   if (conditions.length > 0) {
@@ -39,15 +40,22 @@ export default defineEventHandler(async (event) => {
   
   const result = await query(sql, params)
   
-  return result.rows.map(row => ({
-    id: row.id,
-    roomId: row.room_id,
-    userId: row.user_id,
-    userName: row.user_name,
-    title: row.title,
-    date: row.booking_date,
-    startTime: row.start_time,
-    endTime: row.end_time,
-    status: row.status
-  }))
+  return result.rows.map(row => {
+    const bookingDate = row.booking_date
+    const dateStr = bookingDate instanceof Date 
+      ? bookingDate.toISOString().split('T')[0]
+      : String(bookingDate).split('T')[0]
+    
+    return {
+      id: row.id,
+      roomId: row.room_id,
+      userId: row.user_id,
+      userName: row.user_name,
+      title: row.title,
+      date: dateStr,
+      startTime: String(row.start_time).substring(0, 5),
+      endTime: String(row.end_time).substring(0, 5),
+      status: row.status
+    }
+  })
 })
