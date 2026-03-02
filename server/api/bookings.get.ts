@@ -12,8 +12,8 @@ export default defineEventHandler(async (event) => {
   
   await query(
     `DELETE FROM bookings 
-     WHERE booking_date::date < $1 
-     OR (booking_date::date = $1 AND end_time <= $2)`,
+     WHERE booking_date < $1 
+     OR (booking_date = $1 AND end_time <= $2)`,
     [today, currentHour]
   )
   
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
   
   if (urlQuery.date) {
     const dateParam = String(urlQuery.date).split('T')[0]
-    conditions.push(`booking_date::date = $${params.length + 1}`)
+    conditions.push(`DATE(booking_date) = $${params.length + 1}`)
     params.push(dateParam)
   }
   
