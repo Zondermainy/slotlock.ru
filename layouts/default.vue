@@ -37,23 +37,34 @@
                     <n-button quaternary circle @click="toggleLang" class="lang-btn">
                       {{ isRu ? 'EN' : 'RU' }}
                     </n-button>
+                    <n-button quaternary circle class="hamburger-btn" @click="showMobileMenu = !showMobileMenu">
+                      <template #icon>
+                        <svg v-if="!showMobileMenu" viewBox="0 0 24 24" width="20" height="20" fill="none">
+                          <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none">
+                          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                      </template>
+                    </n-button>
                   </div>
-                  <template v-if="auth.isLoggedIn">
-                    <n-text class="user-name">{{ auth.userName }}</n-text>
-                    <n-tag v-if="auth.isAdmin" type="warning" size="small">{{ t('admin') }}</n-tag>
-                    <NuxtLink to="/my-bookings">
-                      <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
-                    </NuxtLink>
-                    <NuxtLink v-if="auth.isAdmin" to="/admin">
-                      <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
-                    </NuxtLink>
-                    <n-button quaternary class="header-btn" @click="handleLogout">{{ t('logout') }}</n-button>
-                  </template>
-                  <template v-else>
-                    <NuxtLink to="/login">
-                      <n-button class="login-btn">{{ t('login') }}</n-button>
-                    </NuxtLink>
-                  </template>
+                  <div class="desktop-actions" :class="{ 'mobile-open': showMobileMenu }">
+<template v-if="auth.isLoggedIn">
+                      <n-text class="user-name">{{ auth.userName }}</n-text>
+                      <NuxtLink to="/my-bookings" @click="showMobileMenu = false">
+                        <n-button quaternary class="header-btn">{{ t('myBookings') }}</n-button>
+                      </NuxtLink>
+                      <NuxtLink v-if="auth.isAdmin" to="/admin" @click="showMobileMenu = false">
+                        <n-button quaternary class="header-btn">{{ t('adminPanel') }}</n-button>
+                      </NuxtLink>
+                      <n-button quaternary class="header-btn" @click="handleLogout">{{ t('logout') }}</n-button>
+                    </template>
+                    <template v-else>
+                      <NuxtLink to="/login" @click="showMobileMenu = false">
+                        <n-button class="login-btn">{{ t('login') }}</n-button>
+                      </NuxtLink>
+                    </template>
+                  </div>
                 </div>
               </div>
             </n-layout-header>
@@ -104,6 +115,7 @@ watch(isRu, (newVal) => {
 }, { immediate: true })
 
 const isDark = ref(false)
+const showMobileMenu = ref(false)
 
 const toggleTheme = () => {
   isDark.value = !isDark.value
@@ -278,6 +290,11 @@ body {
   min-width: 36px;
 }
 
+.hamburger-btn {
+  display: none;
+  color: white !important;
+}
+
 .header-btn, .login-btn {
   color: white !important;
   background: rgba(255, 255, 255, 0.2) !important;
@@ -395,5 +412,73 @@ body {
 
 .github-link:hover {
   color: white;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0 12px;
+    height: 60px;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .header-controls {
+    padding-right: 8px;
+    margin-right: 8px;
+  }
+
+  .hamburger-btn {
+    display: flex !important;
+  }
+
+  .desktop-actions {
+    display: none;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #1565C0 0%, #1E88E5 100%);
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+  }
+
+  .desktop-actions.mobile-open {
+    display: flex;
+  }
+
+  .desktop-actions .header-btn,
+  .desktop-actions .login-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .user-name {
+    display: block;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .header-actions {
+    position: relative;
+  }
+
+  .main-content {
+    padding: 16px 12px;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 </style>
