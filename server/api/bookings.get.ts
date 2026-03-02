@@ -42,9 +42,18 @@ export default defineEventHandler(async (event) => {
   
   return result.rows.map(row => {
     const bookingDate = row.booking_date
-    const dateStr = bookingDate instanceof Date 
-      ? bookingDate.toISOString().split('T')[0]
-      : String(bookingDate).split('T')[0]
+    let dateStr: string
+    
+    if (bookingDate instanceof Date) {
+      const year = bookingDate.getFullYear()
+      const month = (bookingDate.getMonth() + 1).toString().padStart(2, '0')
+      const day = bookingDate.getDate().toString().padStart(2, '0')
+      dateStr = `${year}-${month}-${day}`
+    } else if (typeof bookingDate === 'string') {
+      dateStr = bookingDate.split('T')[0]
+    } else {
+      dateStr = String(bookingDate)
+    }
     
     return {
       id: row.id,
