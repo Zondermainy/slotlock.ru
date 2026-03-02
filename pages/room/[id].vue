@@ -59,7 +59,12 @@
               <n-date-picker
                 v-model:value="selectedDateTs"
                 type="date"
-                :is-date-disabled="(ts: number) => ts < Date.now() - 86400000 || ts > Date.now() + 14 * 86400000"
+                :is-date-disabled="(ts: number) => {
+                  const now = new Date()
+                  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+                  const maxDate = today + 14 * 86400000
+                  return ts < today || ts > maxDate
+                }"
                 :format="isRu ? 'dd MMMM yyyy' : 'MMMM dd, yyyy'"
                 style="width: 100%"
                 @update:value="onDateChange"
@@ -134,6 +139,9 @@
         </template>
 
         <div class="timeline-visual">
+          <div style="font-size: 10px; padding: 4px; background: #eee; margin-bottom: 8px">
+            DEBUG: Selected={{ selectedDateLocal.dateStr }} | Bookings={{ dayBookings.length }}
+          </div>
           <div class="timeline-rows">
             <div
               v-for="h in displayHours"
@@ -209,6 +217,19 @@ const getLocalDate = (timestamp: number) => {
   const month = (d.getMonth() + 1).toString().padStart(2, '0')
   const day = d.getDate().toString().padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+const getLocalTime = (utcTime: string) => {
+  if (!utcTime) return '00:00'
+  const parts = utcTime.split(':')
+  if (parts.length < 2) return utcTime
+  
+  const [hours, minutes] = parts.map(Number)
+  const now = new Date()
+  const utcDate = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes)
+  const localHours = utcDate.getHours()
+  const localMinutes = utcDate.getMinutes()
+  return `${localHours.toString().padStart(2, '0')}:${localMinutes.toString().padStart(2, '0')}`
 }
 
 const selectedDate = computed(() => {
